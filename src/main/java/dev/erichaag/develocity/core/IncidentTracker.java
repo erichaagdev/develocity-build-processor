@@ -5,6 +5,7 @@ import dev.erichaag.develocity.api.BuildModel;
 import dev.erichaag.develocity.api.BuildProcessorListener;
 import dev.erichaag.develocity.api.GradleBuild;
 import dev.erichaag.develocity.api.MavenBuild;
+import dev.erichaag.develocity.api.ProcessingFinishedEvent;
 
 import java.time.Duration;
 import java.time.Instant;

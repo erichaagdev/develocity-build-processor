@@ -1,8 +1,5 @@
 package dev.erichaag.develocity.api;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
@@ -44,34 +41,6 @@ public interface BuildProcessorListener {
     }
 
     default void onProcessingFinished(ProcessingFinishedEvent event) {
-    }
-
-    record CachedBuildEvent(Instant triggeredAt, Build build) implements BuildProcessorEvent {
-    }
-
-    record FetchedBuildEvent(Instant triggeredAt, Build build) implements BuildProcessorEvent {
-    }
-
-    record DiscoveryStartedEvent(Instant triggeredAt, ZonedDateTime since) implements BuildProcessorEvent {
-    }
-
-    record DiscoveryFinishedEvent(Instant triggeredAt, List<Build> builds) implements BuildProcessorEvent {
-    }
-
-    record ProcessingStartedEvent(Instant triggeredAt) implements BuildProcessorEvent {
-    }
-
-    record ProcessingFinishedEvent(Instant triggeredAt) implements BuildProcessorEvent {
-    }
-
-    sealed interface BuildProcessorEvent permits
-            CachedBuildEvent,
-            FetchedBuildEvent,
-            DiscoveryStartedEvent,
-            DiscoveryFinishedEvent,
-            ProcessingStartedEvent,
-            ProcessingFinishedEvent {
-        Instant triggeredAt();
     }
 
 }

@@ -2,6 +2,12 @@ package dev.erichaag.develocity;
 
 import dev.erichaag.develocity.api.Build;
 import dev.erichaag.develocity.api.BuildProcessorListener;
+import dev.erichaag.develocity.api.CachedBuildEvent;
+import dev.erichaag.develocity.api.DiscoveryFinishedEvent;
+import dev.erichaag.develocity.api.DiscoveryStartedEvent;
+import dev.erichaag.develocity.api.FetchedBuildEvent;
+import dev.erichaag.develocity.api.ProcessingFinishedEvent;
+import dev.erichaag.develocity.api.ProcessingStartedEvent;
 
 import java.net.URI;
 import java.time.Duration;
