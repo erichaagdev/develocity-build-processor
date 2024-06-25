@@ -1,15 +1,21 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    alias(libs.plugins.develocity.api.models)
     alias(libs.plugins.application)
+    alias(libs.plugins.develocity.api.models)
+    alias(libs.plugins.java.test.fixtures)
 }
 
 group = "dev.erichaag"
 version = "0.0.2"
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    implementation("org.apache.commons:commons-math3:3.6.1")
+    implementation(libs.apache.commons.math)
+    testFixturesImplementation(libs.junit.jupiter)
 }
 
 application {
@@ -33,14 +39,10 @@ java {
     }
 }
 
-val test by testing.suites.getting(JvmTestSuite::class) {
-    useJUnitJupiter()
-}
-
 develocityApi {
     version = "2024.1"
 }
 
-repositories {
-    mavenCentral()
+val test by testing.suites.getting(JvmTestSuite::class) {
+    useJUnitJupiter(libs.versions.junit)
 }

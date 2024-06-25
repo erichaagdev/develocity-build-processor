@@ -11,8 +11,12 @@ public final class CompositeBuildCache implements BuildCache {
 
     private final List<BuildCache> buildCaches = new ArrayList<>();
 
-    public CompositeBuildCache(BuildCache buildCache) {
+    private CompositeBuildCache(BuildCache buildCache) {
         buildCaches.add(buildCache);
+    }
+
+    public static CompositeBuildCache firstChecking(BuildCache buildCache) {
+        return new CompositeBuildCache(buildCache);
     }
 
     public CompositeBuildCache followedBy(BuildCache buildCache) {
@@ -21,12 +25,17 @@ public final class CompositeBuildCache implements BuildCache {
     }
 
     @Override
-    public Optional<Build> load(String id, Set<BuildModel> buildModels) {
-        return buildCaches.stream()
-                .map(it -> it.load(id, buildModels))
-                .filter(Optional::isPresent)
-                .findFirst()
-                .orElse(empty());
+    public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
+        for (int i = 0; i < buildCaches.size(); i++) {
+            final var build = buildCaches.get(i).load(id, requiredBuildModels);
+            if (build.isPresent()) {
+                for (int j = i - 1; j >= 0; j--) {
+                    buildCaches.get(j).save(build.get());
+                }
+                return build;
+             }
+        }
+        return empty();
     }
 
     @Override

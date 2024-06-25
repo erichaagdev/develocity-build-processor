@@ -29,12 +29,13 @@ public final class FileSystemBuildCache implements BuildCache {
     }
 
     @Override
-    public Optional<Build> load(String id, Set<BuildModel> buildModels) {
+    public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
         final var cachedBuildFile = getFile(id);
         try {
             if (cachedBuildFile.exists()) {
-                return Optional.of(objectMapper.readValue(cachedBuildFile, Build.class))
-                        .filter(it -> it.getAvailableBuildModels().containsAll(buildModels));
+                return Optional.of(objectMapper.readValue(cachedBuildFile, ApiBuild.class))
+                        .map(Build::from)
+                        .filter(it -> it.getAvailableBuildModels().containsAll(requiredBuildModels));
             }
         } catch (IOException ignored) {
             //noinspection ResultOfMethodCallIgnored
@@ -55,8 +56,8 @@ public final class FileSystemBuildCache implements BuildCache {
         }
     }
 
-    private static File getFile(String id) {
-        return defaultCacheDirectory.resolve(id.substring(0, 2)).resolve(id + ".json").toFile();
+    private File getFile(String id) {
+        return cacheDirectory.resolve(id.substring(0, 2)).resolve(id + ".json").toFile();
     }
 
 }
