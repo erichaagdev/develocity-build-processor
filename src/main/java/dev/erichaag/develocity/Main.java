@@ -1,6 +1,8 @@
 package dev.erichaag.develocity;
 
 import dev.erichaag.develocity.api.BuildProcessor;
+import dev.erichaag.develocity.api.BuildProcessorListener;
+import dev.erichaag.develocity.api.FileSystemBuildCache;
 import dev.erichaag.develocity.api.HttpClientDevelocityClient;
 import dev.erichaag.develocity.core.IncidentReport;
 import dev.erichaag.develocity.core.IncidentTracker;
@@ -17,11 +19,21 @@ final class Main {
         final var configuration = Configuration.load();
         final var develocity = new HttpClientDevelocityClient(configuration.serverUrl());
         final var incidentTracker = new IncidentTracker();
+        final var fileSystemBuildCache = new FileSystemBuildCache();
 
-        final var processor = new BuildProcessor(develocity, configuration.maxBuildsPerRequest());
-        processor.registerListener(new BuildProcessorProgressListener(configuration.serverUrl()));
-        processor.registerListener(incidentTracker);
-        processor.process(configuration.since());
+        final var listener =  BuildProcessorListener.builder()
+                .requiredBuildModels()
+                .onGradleBuild(it -> System.out.println("Hello, Gradle!"))
+                .onMavenBuild(it -> System.out.println("Hello, Maven!"))
+                .onBazelBuild(it -> System.out.println("Hello, Bazel!"))
+                .onSbtBuild(it -> System.out.println("Hello, sbt!"))
+                .build();
+
+        new BuildProcessor(develocity, fileSystemBuildCache, configuration.maxBuildsPerRequest())
+                .register(new BuildProcessorProgressListener(configuration.serverUrl()))
+                .register(incidentTracker)
+                .register(listener)
+                .process(configuration.since().toInstant());
 
         final var incidentReport = new IncidentReport(incidentTracker, configuration.since(), now(), configuration.excludeAbovePercentile());
         try (var archive = getArchive(incidentReport)) {

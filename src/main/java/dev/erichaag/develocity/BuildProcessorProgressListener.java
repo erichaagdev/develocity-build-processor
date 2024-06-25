@@ -21,6 +21,7 @@ import static dev.erichaag.develocity.core.Durations.format;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.time.Instant.now;
+import static java.time.ZoneId.systemDefault;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -48,7 +49,7 @@ final class BuildProcessorProgressListener implements BuildProcessorListener {
     @Override
     public void onDiscoveryStarted(DiscoveryStartedEvent event) {
         print("Processing builds from %s%n", serverUrl);
-        print("Discovering builds since %s%n", event.since().format(formatter));
+        print("Discovering builds since %s%n", event.since().atZone(systemDefault()).format(formatter));
     }
 
     @Override

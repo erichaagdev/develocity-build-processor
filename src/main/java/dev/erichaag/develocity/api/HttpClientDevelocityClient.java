@@ -37,13 +37,15 @@ public final class HttpClientDevelocityClient implements DevelocityClient {
         this.objectMapper = new JsonMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public Build getBuild(String id, BuildModel... buildModels) {
-        final var response = sendRequest("/api/builds/" + id, null, false, null, null, Set.of(buildModels));
+    @Override
+    public Build getBuild(String id, Set<BuildModel> buildModels) {
+        final var response = sendRequest("/api/builds/" + id, null, false, null, null, buildModels);
         return Build.from(handleResponse(response, new TypeReference<>() {}));
     }
 
-    public List<Build> getBuilds(String query, Integer maxBuilds, String fromBuild, BuildModel... buildModels) {
-        final var response = sendRequest("/api/builds", query, true, maxBuilds, fromBuild, Set.of(buildModels));
+    @Override
+    public List<? extends Build> getBuilds(String query, Integer maxBuilds, String fromBuild, Set<BuildModel> buildModels) {
+        final var response = sendRequest("/api/builds", query, true, maxBuilds, fromBuild, buildModels);
         return handleResponse(response, new TypeReference<List<ApiBuild>>() {}).stream().map(Build::from).toList();
     }
 
