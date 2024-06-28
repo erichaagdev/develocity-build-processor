@@ -1,36 +1,20 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    alias(libs.plugins.application)
     alias(libs.plugins.develocity.api.models)
     alias(libs.plugins.java.test.fixtures)
+    alias(libs.plugins.java.library)
 }
 
 group = "dev.erichaag"
-version = "0.0.2"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(libs.apache.commons.math)
     testFixturesImplementation(libs.junit.jupiter)
-}
-
-application {
-    applicationName = "develocity-failure-insights"
-    mainClass = "dev.erichaag.develocity.Main"
-    executableDir = ""
-}
-
-distributions {
-    main {
-        contents {
-            from(layout.projectDirectory.file("config.properties"))
-            from(layout.projectDirectory.file("README.md"))
-        }
-    }
 }
 
 java {
