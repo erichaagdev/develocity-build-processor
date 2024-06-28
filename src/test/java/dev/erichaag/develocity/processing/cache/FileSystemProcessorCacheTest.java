@@ -11,14 +11,14 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class FileSystemBuildCacheTest extends AbstractBuildCacheTest {
+final class FileSystemProcessorCacheTest extends AbstractProcessorCacheTest {
 
     Path temporaryCacheDirectory;
 
     @BeforeEach
     void beforeEach(@TempDir Path temporaryCacheDirectory) {
         this.temporaryCacheDirectory = temporaryCacheDirectory;
-        this.cache = new FileSystemBuildCache(temporaryCacheDirectory);
+        this.cache = new FileSystemProcessorCache(temporaryCacheDirectory);
     }
 
     @Test

@@ -9,9 +9,9 @@ import static dev.erichaag.develocity.api.Builds.gradleBuildWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public abstract class AbstractBuildCacheTest {
+public abstract class AbstractProcessorCacheTest {
 
-    BuildCache cache;
+    ProcessorCache cache;
 
     @Test
     void givenCachedBuild_whenLoaded_thenBuildIsLoadedFromCache() {

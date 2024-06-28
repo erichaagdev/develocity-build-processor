@@ -6,7 +6,7 @@ import dev.erichaag.develocity.api.BuildModel;
 import java.util.Optional;
 import java.util.Set;
 
-public interface BuildCache {
+public interface ProcessorCache {
 
     Optional<Build> load(String id, Set<BuildModel> requiredBuildModels);
 

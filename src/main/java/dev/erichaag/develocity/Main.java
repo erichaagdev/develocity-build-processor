@@ -2,7 +2,7 @@ package dev.erichaag.develocity;
 
 import dev.erichaag.develocity.processing.BuildProcessor;
 import dev.erichaag.develocity.processing.BuildListener;
-import dev.erichaag.develocity.processing.cache.FileSystemBuildCache;
+import dev.erichaag.develocity.processing.cache.FileSystemProcessorCache;
 import dev.erichaag.develocity.api.HttpClientDevelocityClient;
 import dev.erichaag.develocity.core.IncidentReport;
 import dev.erichaag.develocity.core.IncidentTracker;
@@ -19,7 +19,7 @@ final class Main {
         final var configuration = Configuration.load();
         final var develocity = new HttpClientDevelocityClient(configuration.serverUrl());
         final var incidentTracker = new IncidentTracker();
-        final var fileSystemBuildCache = new FileSystemBuildCache();
+        final var fileSystemBuildCache = new FileSystemProcessorCache();
 
         final var listener =  BuildListener.builder()
                 .requiredBuildModels()
@@ -29,10 +29,13 @@ final class Main {
                 .onSbtBuild(it -> System.out.println("Hello, sbt!"))
                 .build();
 
-        new BuildProcessor(develocity, fileSystemBuildCache, configuration.maxBuildsPerRequest())
+        BuildProcessor.forClient(develocity)
                 .register(new BuildProcessorProgressListener(configuration.serverUrl()))
                 .register(incidentTracker)
                 .register(listener)
+                .withProcessorCache(fileSystemBuildCache)
+                .withMaxBuildsPerRequest(configuration.maxBuildsPerRequest())
+                .build()
                 .process(configuration.since().toInstant());
 
         final var incidentReport = new IncidentReport(incidentTracker, configuration.since(), now(), configuration.excludeAbovePercentile());

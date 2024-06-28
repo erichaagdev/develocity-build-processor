@@ -2,11 +2,11 @@ package dev.erichaag.develocity.processing.cache;
 
 import org.junit.jupiter.api.BeforeEach;
 
-final class InMemoryBuildCacheTest extends AbstractBuildCacheTest {
+final class InMemoryProcessorCacheTest extends AbstractProcessorCacheTest {
 
     @BeforeEach
     void beforeEach() {
-        this.cache = new InMemoryBuildCache();
+        this.cache = new InMemoryProcessorCache();
     }
 
 }

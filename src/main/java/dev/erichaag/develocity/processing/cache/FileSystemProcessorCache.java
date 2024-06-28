@@ -15,7 +15,7 @@ import java.util.Set;
 
 import static java.util.Optional.empty;
 
-public final class FileSystemBuildCache implements BuildCache {
+public final class FileSystemProcessorCache implements ProcessorCache {
 
     private static final Path defaultCacheDirectory = Path.of(System.getProperty("user.home"))
             .resolve(".develocity-failure-insights");
@@ -23,11 +23,11 @@ public final class FileSystemBuildCache implements BuildCache {
     private final ObjectMapper objectMapper = new JsonMapper();
     private final Path cacheDirectory;
 
-    public FileSystemBuildCache() {
+    public FileSystemProcessorCache() {
         this.cacheDirectory = defaultCacheDirectory;
     }
 
-    public FileSystemBuildCache(Path cacheDirectory) {
+    public FileSystemProcessorCache(Path cacheDirectory) {
         this.cacheDirectory = cacheDirectory;
     }
 

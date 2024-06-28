@@ -2,38 +2,43 @@ package dev.erichaag.develocity.processing;
 
 import dev.erichaag.develocity.api.BuildModel;
 import dev.erichaag.develocity.api.DevelocityClient;
-import dev.erichaag.develocity.processing.cache.BuildCache;
+import dev.erichaag.develocity.processing.cache.ProcessorCache;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toUnmodifiableSet;
+
 public final class BuildProcessor {
 
+    private static final int defaultMaxBuildsPerRequest = 100;
+
     private final DevelocityClient develocity;
-    private final BuildCache buildCache;
+    private final ProcessorCache processorCache;
     private final int maxBuildsPerRequest;
-    private final List<BuildListener> buildListeners = new ArrayList<>();
-    private final List<ProcessListener> processListeners = new ArrayList<>();
-    private final Set<BuildModel> requiredBuildModels = new HashSet<>();
+    private final List<BuildListener> buildListeners;
+    private final List<ProcessListener> processListeners;
+    private final Set<BuildModel> requiredBuildModels;
 
-    public BuildProcessor(DevelocityClient develocity, BuildCache buildCache, int maxBuildsPerRequest) {
+    BuildProcessor(
+            DevelocityClient develocity,
+            ProcessorCache processorCache,
+            Integer maxBuildsPerRequest,
+            List<BuildListener> buildListeners,
+            List<ProcessListener> processListeners) {
         this.develocity = develocity;
-        this.buildCache = buildCache;
-        this.maxBuildsPerRequest = maxBuildsPerRequest;
+        this.processorCache = processorCache;
+        this.maxBuildsPerRequest = maxBuildsPerRequest == null ? defaultMaxBuildsPerRequest : maxBuildsPerRequest;
+        this.buildListeners = buildListeners;
+        this.processListeners = processListeners;
+        this.requiredBuildModels = buildListeners.stream()
+                .flatMap(it -> it.getRequiredBuildModels().stream())
+                .collect(toUnmodifiableSet());
     }
 
-    public BuildProcessor register(BuildListener listener) {
-        buildListeners.add(listener);
-        requiredBuildModels.addAll(listener.getRequiredBuildModels());
-        return this;
-    }
-
-    public BuildProcessor register(ProcessListener listener) {
-        processListeners.add(listener);
-        return this;
+    public static BuildProcessorBuilder forClient(DevelocityClient develocity) {
+        return new BuildProcessorBuilder(develocity);
     }
 
     public void process(Instant since) {
@@ -43,7 +48,7 @@ public final class BuildProcessor {
     public void process(Instant since, String query) {
         new BuildProcessorWorker(
                 develocity,
-                buildCache,
+                processorCache,
                 maxBuildsPerRequest,
                 since,
                 query,
