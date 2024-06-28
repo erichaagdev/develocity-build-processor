@@ -11,20 +11,22 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class FileSystemProcessorCacheTest extends AbstractProcessorCacheTest {
+final class FileSystemCacheTest extends AbstractCacheTest {
 
     Path temporaryCacheDirectory;
+    PartitioningFileSystemCacheStrategy cacheStrategy;
 
     @BeforeEach
     void beforeEach(@TempDir Path temporaryCacheDirectory) {
         this.temporaryCacheDirectory = temporaryCacheDirectory;
-        this.cache = new FileSystemProcessorCache(temporaryCacheDirectory);
+        this.cacheStrategy = new PartitioningFileSystemCacheStrategy(temporaryCacheDirectory, 2);
+        this.cache = FileSystemCache.withStrategy(cacheStrategy);
     }
 
     @Test
     void givenCorruptFile_whenLoaded_thenBuildIsNotLoadedFromCacheAndFileIsDeleted() throws IOException {
         final var id = "foobarbazqux1";
-        final var corruptCacheFile = temporaryCacheDirectory.resolve(id.substring(0, 2)).resolve(id + ".json").toFile();
+        final var corruptCacheFile = cacheStrategy.getPath(id).toFile();
         //noinspection ResultOfMethodCallIgnored
         corruptCacheFile.getParentFile().mkdirs();
         Files.write(corruptCacheFile.toPath(), "corrupt".getBytes());

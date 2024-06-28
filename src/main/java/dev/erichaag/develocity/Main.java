@@ -2,7 +2,7 @@ package dev.erichaag.develocity;
 
 import dev.erichaag.develocity.processing.BuildProcessor;
 import dev.erichaag.develocity.processing.BuildListener;
-import dev.erichaag.develocity.processing.cache.FileSystemProcessorCache;
+import dev.erichaag.develocity.processing.cache.FileSystemCache;
 import dev.erichaag.develocity.api.HttpClientDevelocityClient;
 import dev.erichaag.develocity.core.IncidentReport;
 import dev.erichaag.develocity.core.IncidentTracker;
@@ -19,7 +19,6 @@ final class Main {
         final var configuration = Configuration.load();
         final var develocity = new HttpClientDevelocityClient(configuration.serverUrl());
         final var incidentTracker = new IncidentTracker();
-        final var fileSystemBuildCache = new FileSystemProcessorCache();
 
         final var listener =  BuildListener.builder()
                 .requiredBuildModels()
@@ -33,7 +32,7 @@ final class Main {
                 .register(new BuildProcessorProgressListener(configuration.serverUrl()))
                 .register(incidentTracker)
                 .register(listener)
-                .withProcessorCache(fileSystemBuildCache)
+                .withProcessorCache(FileSystemCache.withDefaultStrategy())
                 .withMaxBuildsPerRequest(configuration.maxBuildsPerRequest())
                 .build()
                 .process(configuration.since().toInstant());
