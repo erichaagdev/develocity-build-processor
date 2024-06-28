@@ -1,8 +1,8 @@
 package dev.erichaag.develocity;
 
-import dev.erichaag.develocity.api.BuildProcessor;
-import dev.erichaag.develocity.api.BuildProcessorListener;
-import dev.erichaag.develocity.api.FileSystemBuildCache;
+import dev.erichaag.develocity.processing.BuildProcessor;
+import dev.erichaag.develocity.processing.BuildListener;
+import dev.erichaag.develocity.processing.cache.FileSystemBuildCache;
 import dev.erichaag.develocity.api.HttpClientDevelocityClient;
 import dev.erichaag.develocity.core.IncidentReport;
 import dev.erichaag.develocity.core.IncidentTracker;
@@ -21,7 +21,7 @@ final class Main {
         final var incidentTracker = new IncidentTracker();
         final var fileSystemBuildCache = new FileSystemBuildCache();
 
-        final var listener =  BuildProcessorListener.builder()
+        final var listener =  BuildListener.builder()
                 .requiredBuildModels()
                 .onGradleBuild(it -> System.out.println("Hello, Gradle!"))
                 .onMavenBuild(it -> System.out.println("Hello, Maven!"))

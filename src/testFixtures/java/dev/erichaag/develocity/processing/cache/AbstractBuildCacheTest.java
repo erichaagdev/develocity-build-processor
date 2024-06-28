@@ -1,4 +1,4 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing.cache;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,7 @@ import static dev.erichaag.develocity.api.Builds.gradleBuildWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-abstract class AbstractBuildCacheTest {
+public abstract class AbstractBuildCacheTest {
 
     BuildCache cache;
 

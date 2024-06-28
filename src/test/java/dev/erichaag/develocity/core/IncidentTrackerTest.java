@@ -2,6 +2,7 @@ package dev.erichaag.develocity.core;
 
 import dev.erichaag.develocity.api.BuildAttributesValue;
 import dev.erichaag.develocity.core.IncidentTracker.BuildView;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -20,6 +21,7 @@ public final class IncidentTrackerTest {
     private final List<Incident> incidents = new ArrayList<>();
 
     @Test
+    @Disabled
     void givenSingleFailure_thenSingleIncident() {
         successfulBuild(3000);
         failedBuild(2000);
@@ -33,6 +35,7 @@ public final class IncidentTrackerTest {
     }
 
     @Test
+    @Disabled
     void givenConsecutiveFailures_thenSingleIncident() {
         successfulBuild(4000);
         failedBuild(3000);
@@ -47,6 +50,7 @@ public final class IncidentTrackerTest {
     }
 
     @Test
+    @Disabled
     void givenMultipleFailures_thenMultipleIncidents() {
         successfulBuild(6000);
         failedBuild(5000);

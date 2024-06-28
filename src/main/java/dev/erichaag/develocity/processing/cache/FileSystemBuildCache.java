@@ -1,7 +1,10 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import dev.erichaag.develocity.api.ApiBuild;
+import dev.erichaag.develocity.api.Build;
+import dev.erichaag.develocity.api.BuildModel;
 
 import java.io.File;
 import java.io.IOException;

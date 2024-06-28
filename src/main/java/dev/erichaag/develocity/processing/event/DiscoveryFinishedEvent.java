@@ -1,4 +1,6 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing.event;
+
+import dev.erichaag.develocity.api.Build;
 
 import java.time.Instant;
 import java.util.List;
