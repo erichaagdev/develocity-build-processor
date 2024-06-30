@@ -25,13 +25,14 @@ public final class AccessKeyProvider {
     private AccessKeyProvider() {
     }
 
-    public static Optional<String> lookupAccessKey(URI serverUrl) {
+    public static String lookupAccessKey(URI serverUrl) {
         return fromEnvVar(accessKey, serverUrl)
                 .or(() -> fromEnvVar(legacyAccessKey, serverUrl))
                 .or(() -> fromGradleHome("develocity", serverUrl))
                 .or(() -> fromMavenHome("develocity", serverUrl))
                 .or(() -> fromGradleHome("enterprise", serverUrl))
-                .or(() -> fromMavenHome("gradle-enterprise", serverUrl));
+                .or(() -> fromMavenHome("gradle-enterprise", serverUrl))
+                .orElseThrow(() -> new RuntimeException("No access key found for server " + serverUrl.getHost()));
     }
 
     private static Optional<String> fromGradleHome(String baseDir, URI serverUrl) {

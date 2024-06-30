@@ -15,7 +15,7 @@ public final class BuildProcessorBuilder {
     private ProcessorCache processorCache;
     private int maxBuildsPerRequest;
 
-    public BuildProcessorBuilder(DevelocityClient develocity) {
+    BuildProcessorBuilder(DevelocityClient develocity) {
         this.develocity = develocity;
     }
 

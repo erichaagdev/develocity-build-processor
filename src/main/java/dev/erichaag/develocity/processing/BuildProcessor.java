@@ -1,13 +1,18 @@
 package dev.erichaag.develocity.processing;
 
+import dev.erichaag.develocity.api.Build;
 import dev.erichaag.develocity.api.BuildModel;
 import dev.erichaag.develocity.api.DevelocityClient;
 import dev.erichaag.develocity.processing.cache.ProcessorCache;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNullElse;
+import static java.util.Objects.requireNonNullElseGet;
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
 public final class BuildProcessor {
@@ -28,8 +33,8 @@ public final class BuildProcessor {
             List<BuildListener> buildListeners,
             List<ProcessListener> processListeners) {
         this.develocity = develocity;
-        this.processorCache = processorCache;
-        this.maxBuildsPerRequest = maxBuildsPerRequest == null ? defaultMaxBuildsPerRequest : maxBuildsPerRequest;
+        this.processorCache = requireNonNullElseGet(processorCache, NoCache::new);
+        this.maxBuildsPerRequest = requireNonNullElse(maxBuildsPerRequest, defaultMaxBuildsPerRequest);
         this.buildListeners = buildListeners;
         this.processListeners = processListeners;
         this.requiredBuildModels = buildListeners.stream()
@@ -55,6 +60,20 @@ public final class BuildProcessor {
                 buildListeners,
                 processListeners,
                 requiredBuildModels).process();
+    }
+
+    private static final class NoCache implements ProcessorCache {
+
+        @Override
+        public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
+            return empty();
+        }
+
+        @Override
+        public void save(Build build) {
+
+        }
+
     }
 
 }

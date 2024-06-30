@@ -64,51 +64,51 @@ public final class BuildListenerBuilder {
         return this;
     }
 
-    public BuildListenerBuilder onBuild(Consumer<Build> consumer) {
+    public BuildListenerBuilder onBuild(Consumer<Build> onBuild) {
         listeners.add(new BuildListener() {
             @Override
             public void onBuild(Build build) {
-                consumer.accept(build);
+                onBuild.accept(build);
             }
         });
         return this;
     }
 
-    public BuildListenerBuilder onGradleBuild(Consumer<GradleBuild> consumer) {
+    public BuildListenerBuilder onGradleBuild(Consumer<GradleBuild> onGradleBuild) {
         listeners.add(new BuildListener() {
             @Override
             public void onGradleBuild(GradleBuild build) {
-                consumer.accept(build);
+                onGradleBuild.accept(build);
             }
         });
         return this;
     }
 
-    public BuildListenerBuilder onMavenBuild(Consumer<MavenBuild> consumer) {
+    public BuildListenerBuilder onMavenBuild(Consumer<MavenBuild> onMavenBuild) {
         listeners.add(new BuildListener() {
             @Override
             public void onMavenBuild(MavenBuild build) {
-                consumer.accept(build);
+                onMavenBuild.accept(build);
             }
         });
         return this;
     }
 
-    public BuildListenerBuilder onBazelBuild(Consumer<BazelBuild> consumer) {
+    public BuildListenerBuilder onBazelBuild(Consumer<BazelBuild> onBazelBuild) {
         listeners.add(new BuildListener() {
             @Override
             public void onBazelBuild(BazelBuild build) {
-                consumer.accept(build);
+                onBazelBuild.accept(build);
             }
         });
         return this;
     }
 
-    public BuildListenerBuilder onSbtBuild(Consumer<SbtBuild> consumer) {
+    public BuildListenerBuilder onSbtBuild(Consumer<SbtBuild> onSbtBuild) {
         listeners.add(new BuildListener() {
             @Override
             public void onSbtBuild(SbtBuild build) {
-                consumer.accept(build);
+                onSbtBuild.accept(build);
             }
         });
         return this;

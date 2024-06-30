@@ -9,6 +9,10 @@ import dev.erichaag.develocity.processing.event.ProcessingStartedEvent;
 
 public interface ProcessListener {
 
+    static ProcessListenerBuilder builder() {
+        return new ProcessListenerBuilder();
+    }
+
     default void onCachedBuild(CachedBuildEvent event) {
     }
 
