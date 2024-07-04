@@ -10,16 +10,16 @@ import static dev.erichaag.develocity.api.Builds.gradleBuild;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class CompositeBuildCacheTest extends AbstractBuildCacheTest {
+final class CompositeProcessorCacheTest extends AbstractProcessorCacheTest {
 
-    InMemoryBuildCache inMemoryBuildCache;
-    FileSystemBuildCache fileSystemBuildCache;
+    InMemoryProcessorCache inMemoryBuildCache;
+    FileSystemProcessorCache fileSystemBuildCache;
 
     @BeforeEach
     void beforeEach(@TempDir Path temporaryCacheDirectory) {
-        this.inMemoryBuildCache = new InMemoryBuildCache();
-        this.fileSystemBuildCache = new FileSystemBuildCache(temporaryCacheDirectory);
-        this.cache = CompositeBuildCache.firstChecking(inMemoryBuildCache)
+        this.inMemoryBuildCache = new InMemoryProcessorCache();
+        this.fileSystemBuildCache = new FileSystemProcessorCache(temporaryCacheDirectory);
+        this.cache = CompositeProcessorCache.firstChecking(inMemoryBuildCache)
                 .followedBy(fileSystemBuildCache);
     }
 

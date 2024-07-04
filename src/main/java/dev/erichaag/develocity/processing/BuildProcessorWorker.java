@@ -7,7 +7,7 @@ import dev.erichaag.develocity.api.DevelocityClient;
 import dev.erichaag.develocity.api.GradleBuild;
 import dev.erichaag.develocity.api.MavenBuild;
 import dev.erichaag.develocity.api.SbtBuild;
-import dev.erichaag.develocity.processing.cache.BuildCache;
+import dev.erichaag.develocity.processing.cache.ProcessorCache;
 import dev.erichaag.develocity.processing.event.CachedBuildEvent;
 import dev.erichaag.develocity.processing.event.DiscoveryFinishedEvent;
 import dev.erichaag.develocity.processing.event.DiscoveryStartedEvent;
@@ -27,7 +27,7 @@ class BuildProcessorWorker {
     private static final int maxDiscoveryBuildsPerRequest = 1_000;
 
     private final DevelocityClient develocity;
-    private final BuildCache buildCache;
+    private final ProcessorCache processorCache;
     private final int maxBuildsPerRequest;
     private final Instant since;
     private final String query;
@@ -41,7 +41,7 @@ class BuildProcessorWorker {
 
     BuildProcessorWorker(
             DevelocityClient develocity,
-            BuildCache buildCache,
+            ProcessorCache processorCache,
             int maxBuildsPerRequest,
             Instant since,
             String query,
@@ -49,7 +49,7 @@ class BuildProcessorWorker {
             List<ProcessListener> processListeners,
             Set<BuildModel> requiredBuildModels) {
         this.develocity = develocity;
-        this.buildCache = buildCache;
+        this.processorCache = processorCache;
         this.maxBuildsPerRequest = maxBuildsPerRequest;
         this.since = since;
         this.query = query;
@@ -83,7 +83,7 @@ class BuildProcessorWorker {
     }
 
     private void process(Build build) {
-        final var cachedBuild = buildCache.load(build.getId(), requiredBuildModels);
+        final var cachedBuild = processorCache.load(build.getId(), requiredBuildModels);
         if (uncached == maxBuildsPerRequest || (cachedBuild.isPresent() && uncached > 0)) {
             processUncachedBuilds();
             lastCachedBuildId = lastUncachedBuildId;
@@ -104,14 +104,14 @@ class BuildProcessorWorker {
             return;
         }
         final var build = develocity.getBuild(cachedBuild.getId(), requiredBuildModels);
-        buildCache.save(build);
+        processorCache.save(build);
         notifyListenersFetchedBuild(build);
     }
 
     private void processUncachedBuilds() {
         final var builds = develocity.getBuilds(query, uncached, lastCachedBuildId, requiredBuildModels);
         builds.forEach(build -> {
-            buildCache.save(build);
+            processorCache.save(build);
             notifyListenersFetchedBuild(build);
         });
     }
