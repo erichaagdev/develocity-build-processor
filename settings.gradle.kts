@@ -11,4 +11,4 @@ develocity {
     }
 }
 
-rootProject.name = "develocity-failure-insights"
+rootProject.name = "develocity-build-scan-processor"
