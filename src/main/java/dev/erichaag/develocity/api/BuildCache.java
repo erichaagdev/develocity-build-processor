@@ -5,10 +5,10 @@ import java.util.Set;
 
 public interface BuildCache {
 
-    Optional<Build> load(String id, Set<BuildModel> buildModels);
+    Optional<Build> load(String id, Set<BuildModel> requiredBuildModels);
 
-    default Optional<Build> load(String id, BuildModel... buildModels) {
-        return load(id, Set.of(buildModels));
+    default Optional<Build> load(String id, BuildModel... requiredBuildModels) {
+        return load(id, Set.of(requiredBuildModels));
     }
 
     void save(Build build);

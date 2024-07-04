@@ -1,14 +1,19 @@
 [versions]
+apache-commons-math = "3.6.1"
 jackson-core = "2.17.1"
 jakarta-annotation = "3.0.0"
+junit = "5.10.2"
 openapi-generator = "7.6.0"
 
 [libraries]
+apache-commons-math = { module = "org.apache.commons:commons-math3", version.ref = "apache-commons-math" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-core" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-core" }
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
 [plugins]
 application = { id = "application" }
 develocity-api-models = { id = "conventions.develocity-api-models" }
+java-test-fixtures = { id = "java-test-fixtures" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }

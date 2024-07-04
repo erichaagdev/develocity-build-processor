@@ -27,8 +27,8 @@ public final class InMemoryBuildCache implements BuildCache {
     }
 
     @Override
-    public Optional<Build> load(String id, Set<BuildModel> buildModels) {
-        return ofNullable(buildsById.get(id)).filter(it -> it.getAvailableBuildModels().containsAll(buildModels));
+    public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
+        return ofNullable(buildsById.get(id)).filter(it -> it.getAvailableBuildModels().containsAll(requiredBuildModels));
     }
 
     @Override
