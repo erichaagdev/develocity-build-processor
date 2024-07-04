@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
 
-public final class InMemoryProcessorCache implements ProcessorCache {
+public final class InMemoryCache implements ProcessorCache {
 
     private static final int defaultMaxCacheSize = 10_000;
 
@@ -20,13 +20,17 @@ public final class InMemoryProcessorCache implements ProcessorCache {
     private final Queue<Build> buildQueue = new LinkedList<>();
     private final int maxCacheSize;
 
-    public InMemoryProcessorCache() {
-        maxCacheSize = defaultMaxCacheSize;
-    }
-
-    public InMemoryProcessorCache(int maxCacheSize) {
+    private InMemoryCache(int maxCacheSize) {
         if (maxCacheSize < 1) throw new IllegalArgumentException("Maximum cache size must be greater than 0");
         this.maxCacheSize = maxCacheSize;
+    }
+
+    public static InMemoryCache withDefaultSize() {
+        return new InMemoryCache(defaultMaxCacheSize);
+    }
+
+    public static InMemoryCache withSize(int size) {
+        return new InMemoryCache(size);
     }
 
     @Override

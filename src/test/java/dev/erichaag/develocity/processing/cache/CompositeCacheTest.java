@@ -10,17 +10,17 @@ import static dev.erichaag.develocity.api.Builds.gradleBuild;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class CompositeProcessorCacheTest extends AbstractProcessorCacheTest {
+final class CompositeCacheTest extends AbstractCacheTest {
 
-    InMemoryProcessorCache inMemoryBuildCache;
-    FileSystemProcessorCache fileSystemBuildCache;
+    InMemoryCache inMemoryCache;
+    FileSystemCache fileSystemCache;
 
     @BeforeEach
     void beforeEach(@TempDir Path temporaryCacheDirectory) {
-        this.inMemoryBuildCache = new InMemoryProcessorCache();
-        this.fileSystemBuildCache = new FileSystemProcessorCache(temporaryCacheDirectory);
-        this.cache = CompositeProcessorCache.firstChecking(inMemoryBuildCache)
-                .followedBy(fileSystemBuildCache);
+        this.inMemoryCache = InMemoryCache.withDefaultSize();
+        this.fileSystemCache = FileSystemCache.withStrategy(new PartitioningFileSystemCacheStrategy(temporaryCacheDirectory, 2));
+        this.cache = CompositeCache.firstChecking(inMemoryCache)
+                .followedBy(fileSystemCache);
     }
 
     @Test
@@ -28,8 +28,8 @@ final class CompositeProcessorCacheTest extends AbstractProcessorCacheTest {
         final var id = "foobarbazqux1";
         final var savedBuild = gradleBuild(id);
         cache.save(savedBuild);
-        final var inMemoryBuild = inMemoryBuildCache.load(id);
-        final var fileSystemBuild = fileSystemBuildCache.load(id);
+        final var inMemoryBuild = inMemoryCache.load(id);
+        final var fileSystemBuild = fileSystemCache.load(id);
         assertTrue(inMemoryBuild.isPresent());
         assertEquals(savedBuild, inMemoryBuild.get());
         assertTrue(fileSystemBuild.isPresent());
@@ -40,9 +40,9 @@ final class CompositeProcessorCacheTest extends AbstractProcessorCacheTest {
     void givenBuildExistsInMemoryButNotOnFileSystem_whenLoaded_thenBuildIsLoadedButBuildIsNotPersistedToFileSystem() {
         final var id = "foobarbazqux1";
         final var inMemoryBuild = gradleBuild(id);
-        inMemoryBuildCache.save(inMemoryBuild);
+        inMemoryCache.save(inMemoryBuild);
         final var compositeBuild = cache.load(id);
-        final var fileSystemBuild = fileSystemBuildCache.load(id);
+        final var fileSystemBuild = fileSystemCache.load(id);
         assertTrue(compositeBuild.isPresent());
         assertEquals(inMemoryBuild, compositeBuild.get());
         assertTrue(fileSystemBuild.isEmpty());
@@ -52,9 +52,9 @@ final class CompositeProcessorCacheTest extends AbstractProcessorCacheTest {
     void givenBuildExistsOnFileSystemButNotInMemory_whenLoaded_thenBuildIsLoadedAndBuildIsPersistedToMemory() {
         final var id = "foobarbazqux1";
         final var fileSystemBuild = gradleBuild(id);
-        fileSystemBuildCache.save(fileSystemBuild);
+        fileSystemCache.save(fileSystemBuild);
         final var compositeBuild = cache.load(id);
-        final var inMemoryBuild = inMemoryBuildCache.load(id);
+        final var inMemoryBuild = inMemoryCache.load(id);
         assertTrue(compositeBuild.isPresent());
         assertEquals(fileSystemBuild, compositeBuild.get());
         assertTrue(inMemoryBuild.isPresent());

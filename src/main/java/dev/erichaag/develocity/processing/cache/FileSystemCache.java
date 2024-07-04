@@ -6,7 +6,6 @@ import dev.erichaag.develocity.api.ApiBuild;
 import dev.erichaag.develocity.api.Build;
 import dev.erichaag.develocity.api.BuildModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,25 +14,30 @@ import java.util.Set;
 
 import static java.util.Optional.empty;
 
-public final class FileSystemProcessorCache implements ProcessorCache {
+public final class FileSystemCache implements ProcessorCache {
 
-    private static final Path defaultCacheDirectory = Path.of(System.getProperty("user.home"))
+    private static final int defaultGranularity = 2;
+    private static final Path defaultRootDirectory = Path.of(System.getProperty("user.home"))
             .resolve(".develocity-failure-insights");
 
     private final ObjectMapper objectMapper = new JsonMapper();
-    private final Path cacheDirectory;
+    private final FileSystemCacheStrategy fileSystemCacheStrategy;
 
-    public FileSystemProcessorCache() {
-        this.cacheDirectory = defaultCacheDirectory;
+    private FileSystemCache(FileSystemCacheStrategy fileSystemCacheStrategy) {
+        this.fileSystemCacheStrategy = fileSystemCacheStrategy;
     }
 
-    public FileSystemProcessorCache(Path cacheDirectory) {
-        this.cacheDirectory = cacheDirectory;
+    public static FileSystemCache withDefaultStrategy() {
+        return new FileSystemCache(new PartitioningFileSystemCacheStrategy(defaultRootDirectory, defaultGranularity));
+    }
+
+    public static FileSystemCache withStrategy(FileSystemCacheStrategy strategy) {
+        return new FileSystemCache(strategy);
     }
 
     @Override
     public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
-        final var cachedBuildFile = getFile(id);
+        final var cachedBuildFile = fileSystemCacheStrategy.getPath(id).toFile();
         try {
             if (cachedBuildFile.exists()) {
                 return Optional.of(objectMapper.readValue(cachedBuildFile, ApiBuild.class))
@@ -49,7 +53,7 @@ public final class FileSystemProcessorCache implements ProcessorCache {
 
     @Override
     public void save(Build build) {
-        final var cachedBuildFile = getFile(build.getId());
+        final var cachedBuildFile = fileSystemCacheStrategy.getPath(build.getId()).toFile();
         //noinspection ResultOfMethodCallIgnored
         cachedBuildFile.getParentFile().mkdirs();
         try {
@@ -57,10 +61,6 @@ public final class FileSystemProcessorCache implements ProcessorCache {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private File getFile(String id) {
-        return cacheDirectory.resolve(id.substring(0, 2)).resolve(id + ".json").toFile();
     }
 
 }
