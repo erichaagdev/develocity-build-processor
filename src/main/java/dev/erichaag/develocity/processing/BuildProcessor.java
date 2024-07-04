@@ -1,4 +1,8 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing;
+
+import dev.erichaag.develocity.api.BuildModel;
+import dev.erichaag.develocity.api.DevelocityClient;
+import dev.erichaag.develocity.processing.cache.BuildCache;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -11,7 +15,8 @@ public final class BuildProcessor {
     private final DevelocityClient develocity;
     private final BuildCache buildCache;
     private final int maxBuildsPerRequest;
-    private final List<BuildProcessorListener> listeners = new ArrayList<>();
+    private final List<BuildListener> buildListeners = new ArrayList<>();
+    private final List<ProcessListener> processListeners = new ArrayList<>();
     private final Set<BuildModel> requiredBuildModels = new HashSet<>();
 
     public BuildProcessor(DevelocityClient develocity, BuildCache buildCache, int maxBuildsPerRequest) {
@@ -20,9 +25,14 @@ public final class BuildProcessor {
         this.maxBuildsPerRequest = maxBuildsPerRequest;
     }
 
-    public BuildProcessor register(BuildProcessorListener listener) {
-        listeners.add(listener);
+    public BuildProcessor register(BuildListener listener) {
+        buildListeners.add(listener);
         requiredBuildModels.addAll(listener.getRequiredBuildModels());
+        return this;
+    }
+
+    public BuildProcessor register(ProcessListener listener) {
+        processListeners.add(listener);
         return this;
     }
 
@@ -37,7 +47,8 @@ public final class BuildProcessor {
                 maxBuildsPerRequest,
                 since,
                 query,
-                listeners,
+                buildListeners,
+                processListeners,
                 requiredBuildModels).process();
     }
 

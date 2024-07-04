@@ -1,7 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("java")
+    id("java-library")
     id("org.openapi.generator")
 }
 
@@ -34,7 +34,7 @@ val resolvableDevelocityApiSpecification = configurations.resolvable("resolvable
 
 dependencies {
     develocityApiSpecification(develocityApiExtension.version.map { "com.gradle:develocity-api-specification:$it" })
-    implementation(libs.findLibrary("jackson-annotations").get())
+    api(libs.findLibrary("jackson-annotations").get())
     implementation(libs.findLibrary("jackson-databind").get())
     implementation(libs.findLibrary("jakarta-annotation-api").get())
 }

@@ -1,4 +1,11 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing;
+
+import dev.erichaag.develocity.api.BazelBuild;
+import dev.erichaag.develocity.api.Build;
+import dev.erichaag.develocity.api.BuildModel;
+import dev.erichaag.develocity.api.GradleBuild;
+import dev.erichaag.develocity.api.MavenBuild;
+import dev.erichaag.develocity.api.SbtBuild;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,16 +15,16 @@ import java.util.function.Consumer;
 
 import static java.util.Set.copyOf;
 
-public final class BuildProcessorListenerBuilder {
+public final class BuildListenerBuilder {
 
-    private final List<BuildProcessorListener> listeners = new ArrayList<>();
+    private final List<BuildListener> listeners = new ArrayList<>();
     private final Set<BuildModel> requiredBuildModels = new HashSet<>();
 
-    BuildProcessorListenerBuilder() {
+    BuildListenerBuilder() {
     }
 
-    public BuildProcessorListener build() {
-        return new BuildProcessorListener() {
+    public BuildListener build() {
+        return new BuildListener() {
 
             @Override
             public Set<BuildModel> getRequiredBuildModels() {
@@ -52,13 +59,13 @@ public final class BuildProcessorListenerBuilder {
         };
     }
 
-    public BuildProcessorListenerBuilder requiredBuildModels(BuildModel... buildModels) {
+    public BuildListenerBuilder requiredBuildModels(BuildModel... buildModels) {
         requiredBuildModels.addAll(Set.of(buildModels));
         return this;
     }
 
-    public BuildProcessorListenerBuilder onBuild(Consumer<Build> consumer) {
-        listeners.add(new BuildProcessorListener() {
+    public BuildListenerBuilder onBuild(Consumer<Build> consumer) {
+        listeners.add(new BuildListener() {
             @Override
             public void onBuild(Build build) {
                 consumer.accept(build);
@@ -67,8 +74,8 @@ public final class BuildProcessorListenerBuilder {
         return this;
     }
 
-    public BuildProcessorListenerBuilder onGradleBuild(Consumer<GradleBuild> consumer) {
-        listeners.add(new BuildProcessorListener() {
+    public BuildListenerBuilder onGradleBuild(Consumer<GradleBuild> consumer) {
+        listeners.add(new BuildListener() {
             @Override
             public void onGradleBuild(GradleBuild build) {
                 consumer.accept(build);
@@ -77,8 +84,8 @@ public final class BuildProcessorListenerBuilder {
         return this;
     }
 
-    public BuildProcessorListenerBuilder onMavenBuild(Consumer<MavenBuild> consumer) {
-        listeners.add(new BuildProcessorListener() {
+    public BuildListenerBuilder onMavenBuild(Consumer<MavenBuild> consumer) {
+        listeners.add(new BuildListener() {
             @Override
             public void onMavenBuild(MavenBuild build) {
                 consumer.accept(build);
@@ -87,8 +94,8 @@ public final class BuildProcessorListenerBuilder {
         return this;
     }
 
-    public BuildProcessorListenerBuilder onBazelBuild(Consumer<BazelBuild> consumer) {
-        listeners.add(new BuildProcessorListener() {
+    public BuildListenerBuilder onBazelBuild(Consumer<BazelBuild> consumer) {
+        listeners.add(new BuildListener() {
             @Override
             public void onBazelBuild(BazelBuild build) {
                 consumer.accept(build);
@@ -97,8 +104,8 @@ public final class BuildProcessorListenerBuilder {
         return this;
     }
 
-    public BuildProcessorListenerBuilder onSbtBuild(Consumer<SbtBuild> consumer) {
-        listeners.add(new BuildProcessorListener() {
+    public BuildListenerBuilder onSbtBuild(Consumer<SbtBuild> consumer) {
+        listeners.add(new BuildListener() {
             @Override
             public void onSbtBuild(SbtBuild build) {
                 consumer.accept(build);

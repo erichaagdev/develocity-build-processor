@@ -1,4 +1,7 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing.cache;
+
+import dev.erichaag.develocity.api.Build;
+import dev.erichaag.develocity.api.BuildModel;
 
 import java.util.LinkedList;
 import java.util.Map;

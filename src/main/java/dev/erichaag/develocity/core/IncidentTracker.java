@@ -2,10 +2,9 @@ package dev.erichaag.develocity.core;
 
 import dev.erichaag.develocity.api.BuildAttributesValue;
 import dev.erichaag.develocity.api.BuildModel;
-import dev.erichaag.develocity.api.BuildProcessorListener;
 import dev.erichaag.develocity.api.GradleBuild;
 import dev.erichaag.develocity.api.MavenBuild;
-import dev.erichaag.develocity.api.ProcessingFinishedEvent;
+import dev.erichaag.develocity.processing.BuildListener;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,15 +22,21 @@ import static dev.erichaag.develocity.api.BuildModel.MAVEN_ATTRIBUTES;
 import static java.lang.String.join;
 import static java.time.Duration.ofMillis;
 import static java.time.Instant.ofEpochMilli;
+import static java.util.List.copyOf;
 
-public final class IncidentTracker implements BuildProcessorListener {
+public final class IncidentTracker implements BuildListener {
 
-    private final List<Incident> resolvedIncidents = new ArrayList<>();
     private final Map<String, Incident> unresolvedIncidents = new HashMap<>();
     private final Set<BuildView> buildViews = new TreeSet<>();
 
+    private List<Incident> resolvedIncidents;
+
     List<Incident> getResolvedIncidents() {
-        return resolvedIncidents;
+        if (resolvedIncidents == null) {
+            resolvedIncidents = new ArrayList<>();
+            buildViews.forEach(this::processBuild);
+        }
+        return copyOf(resolvedIncidents);
     }
 
     @Override
@@ -65,11 +70,6 @@ public final class IncidentTracker implements BuildProcessorListener {
                         attributes.getHasFailed(),
                         ofEpochMilli(attributes.getBuildStartTime()),
                         ofMillis(attributes.getBuildDuration()))));
-    }
-
-    @Override
-    public void onProcessingFinished(ProcessingFinishedEvent event) {
-        buildViews.forEach(this::processBuild);
     }
 
     void processBuild(BuildView buildView) {

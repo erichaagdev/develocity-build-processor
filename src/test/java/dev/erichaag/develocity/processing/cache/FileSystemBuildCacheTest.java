@@ -1,4 +1,4 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing.cache;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

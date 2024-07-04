@@ -1,13 +1,12 @@
 package dev.erichaag.develocity;
 
-import dev.erichaag.develocity.api.Build;
-import dev.erichaag.develocity.api.BuildProcessorListener;
-import dev.erichaag.develocity.api.CachedBuildEvent;
-import dev.erichaag.develocity.api.DiscoveryFinishedEvent;
-import dev.erichaag.develocity.api.DiscoveryStartedEvent;
-import dev.erichaag.develocity.api.FetchedBuildEvent;
-import dev.erichaag.develocity.api.ProcessingFinishedEvent;
-import dev.erichaag.develocity.api.ProcessingStartedEvent;
+import dev.erichaag.develocity.processing.ProcessListener;
+import dev.erichaag.develocity.processing.event.CachedBuildEvent;
+import dev.erichaag.develocity.processing.event.DiscoveryFinishedEvent;
+import dev.erichaag.develocity.processing.event.DiscoveryStartedEvent;
+import dev.erichaag.develocity.processing.event.FetchedBuildEvent;
+import dev.erichaag.develocity.processing.event.ProcessingFinishedEvent;
+import dev.erichaag.develocity.processing.event.ProcessingStartedEvent;
 
 import java.net.URI;
 import java.time.Duration;
@@ -26,7 +25,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-final class BuildProcessorProgressListener implements BuildProcessorListener {
+final class BuildProcessorProgressListener implements ProcessListener {
 
     private static final Duration progressInterval = ofSeconds(10);
     private static final DateTimeFormatter formatter = ofPattern("LLL d uuuu HH:mm z");
@@ -73,18 +72,15 @@ final class BuildProcessorProgressListener implements BuildProcessorListener {
     }
 
     @Override
-    public void onBuild(Build build) {
-        processed++;
-    }
-
-    @Override
     public void onCachedBuild(CachedBuildEvent event) {
         cached++;
+        processed++;
     }
 
     @Override
     public void onFetchedBuild(FetchedBuildEvent event) {
         fetched++;
+        processed++;
     }
 
     private void printProgress(Instant now) {

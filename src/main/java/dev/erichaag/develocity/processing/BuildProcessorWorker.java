@@ -1,4 +1,19 @@
-package dev.erichaag.develocity.api;
+package dev.erichaag.develocity.processing;
+
+import dev.erichaag.develocity.api.BazelBuild;
+import dev.erichaag.develocity.api.Build;
+import dev.erichaag.develocity.api.BuildModel;
+import dev.erichaag.develocity.api.DevelocityClient;
+import dev.erichaag.develocity.api.GradleBuild;
+import dev.erichaag.develocity.api.MavenBuild;
+import dev.erichaag.develocity.api.SbtBuild;
+import dev.erichaag.develocity.processing.cache.BuildCache;
+import dev.erichaag.develocity.processing.event.CachedBuildEvent;
+import dev.erichaag.develocity.processing.event.DiscoveryFinishedEvent;
+import dev.erichaag.develocity.processing.event.DiscoveryStartedEvent;
+import dev.erichaag.develocity.processing.event.FetchedBuildEvent;
+import dev.erichaag.develocity.processing.event.ProcessingFinishedEvent;
+import dev.erichaag.develocity.processing.event.ProcessingStartedEvent;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,7 +31,8 @@ class BuildProcessorWorker {
     private final int maxBuildsPerRequest;
     private final Instant since;
     private final String query;
-    private final List<BuildProcessorListener> listeners;
+    private final List<BuildListener> buildListeners;
+    private final List<ProcessListener> processListeners;
     private final Set<BuildModel> requiredBuildModels;
 
     private String lastCachedBuildId;
@@ -29,14 +45,16 @@ class BuildProcessorWorker {
             int maxBuildsPerRequest,
             Instant since,
             String query,
-            List<BuildProcessorListener> listeners,
+            List<BuildListener> buildListeners,
+            List<ProcessListener> processListeners,
             Set<BuildModel> requiredBuildModels) {
         this.develocity = develocity;
         this.buildCache = buildCache;
         this.maxBuildsPerRequest = maxBuildsPerRequest;
         this.since = since;
         this.query = query;
-        this.listeners = listeners;
+        this.buildListeners = buildListeners;
+        this.processListeners = processListeners;
         this.requiredBuildModels = requiredBuildModels;
     }
 
@@ -82,13 +100,11 @@ class BuildProcessorWorker {
 
     private void processCachedBuild(Build cachedBuild) {
         if (cachedBuild.getAvailableBuildModels().containsAll(requiredBuildModels)) {
-            notifyListenersBuild(cachedBuild);
             notifyListenersCachedBuild(cachedBuild);
             return;
         }
         final var build = develocity.getBuild(cachedBuild.getId(), requiredBuildModels);
         buildCache.save(build);
-        notifyListenersBuild(build);
         notifyListenersFetchedBuild(build);
     }
 
@@ -96,33 +112,44 @@ class BuildProcessorWorker {
         final var builds = develocity.getBuilds(query, uncached, lastCachedBuildId, requiredBuildModels);
         builds.forEach(build -> {
             buildCache.save(build);
-            notifyListenersBuild(build);
             notifyListenersFetchedBuild(build);
         });
     }
 
     private void notifyListenersDiscoveryStarted() {
         final var event = new DiscoveryStartedEvent(now(), since);
-        listeners.forEach(it -> it.onDiscoveryStarted(event));
+        processListeners.forEach(it -> it.onDiscoveryStarted(event));
     }
 
     private void notifyListenersDiscoveryFinished(List<Build> builds) {
         final var event = new DiscoveryFinishedEvent(now(), builds);
-        listeners.forEach(it -> it.onDiscoveryFinished(event));
+        processListeners.forEach(it -> it.onDiscoveryFinished(event));
     }
 
     private void notifyListenersProcessingStarted() {
         final var event = new ProcessingStartedEvent(now());
-        listeners.forEach(it -> it.onProcessingStarted(event));
+        processListeners.forEach(it -> it.onProcessingStarted(event));
     }
 
     private void notifyListenersProcessingFinished() {
         final var event = new ProcessingFinishedEvent(now());
-        listeners.forEach(it -> it.onProcessingFinished(event));
+        processListeners.forEach(it -> it.onProcessingFinished(event));
+    }
+
+    private void notifyListenersCachedBuild(Build build) {
+        final var event = new CachedBuildEvent(now(), build);
+        processListeners.forEach(it -> it.onCachedBuild(event));
+        notifyListenersBuild(build);
+    }
+
+    private void notifyListenersFetchedBuild(Build build) {
+        final var event = new FetchedBuildEvent(now(), build);
+        processListeners.forEach(it -> it.onFetchedBuild(event));
+        notifyListenersBuild(build);
     }
 
     private void notifyListenersBuild(Build build) {
-        listeners.forEach(listener -> {
+        buildListeners.forEach(listener -> {
             listener.onBuild(build);
             switch (build) {
                 case GradleBuild b -> listener.onGradleBuild(b);
@@ -131,16 +158,6 @@ class BuildProcessorWorker {
                 case SbtBuild b -> listener.onSbtBuild(b);
             }
         });
-    }
-
-    private void notifyListenersCachedBuild(Build build) {
-        final var event = new CachedBuildEvent(now(), build);
-        listeners.forEach(it -> it.onCachedBuild(event));
-    }
-
-    private void notifyListenersFetchedBuild(Build build) {
-        final var event = new FetchedBuildEvent(now(), build);
-        listeners.forEach(it -> it.onFetchedBuild(event));
     }
 
     private static String getLastId(List<Build> builds) {

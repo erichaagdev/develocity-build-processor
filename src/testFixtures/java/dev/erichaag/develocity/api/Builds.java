@@ -2,7 +2,7 @@ package dev.erichaag.develocity.api;
 
 import java.util.List;
 
-final class Builds {
+public final class Builds {
 
     public static GradleBuild gradleBuild(String id) {
         return (GradleBuild) Build.from(gradleApiBuild(id));
