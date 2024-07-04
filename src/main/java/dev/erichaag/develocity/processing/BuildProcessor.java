@@ -20,7 +20,6 @@ import static java.util.Objects.requireNonNullElse;
 import static java.util.Objects.requireNonNullElseGet;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toUnmodifiableSet;
-import static java.util.stream.Stream.concat;
 
 public final class BuildProcessor {
 
@@ -46,8 +45,7 @@ public final class BuildProcessor {
             Integer retryLimit,
             Double retryFactor,
             List<BuildListener> buildListeners,
-            List<ProcessListener> processListeners,
-            Set<BuildModel> requiredBuildModels
+            List<ProcessListener> processListeners
     ) {
         this.develocity = develocity;
         this.processorCache = requireNonNullElseGet(processorCache, NoopCache::new);
@@ -58,7 +56,8 @@ public final class BuildProcessor {
         this.retryFactor = requireNonNullElse(retryFactor, 1.5);
         this.buildListeners = buildListeners;
         this.processListeners = processListeners;
-        this.requiredBuildModels = concat(requiredBuildModels.stream(), buildListeners.stream().flatMap(it -> it.getRequiredBuildModels().stream()))
+        this.requiredBuildModels = buildListeners.stream()
+                .flatMap(it -> it.getRequiredBuildModels().stream())
                 .collect(toUnmodifiableSet());
         validate();
     }

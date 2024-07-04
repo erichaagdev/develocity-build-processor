@@ -15,6 +15,22 @@ import java.util.function.Consumer;
 
 import static java.util.Set.copyOf;
 
+/**
+ * A builder class for constructing a {@link BuildListener} instance.
+ *
+ * <p>An instance of this builder can be obtained by calling
+ * {@link BuildListener#builder()}.
+ *
+ * <p>This builder allows you to create a {@link BuildListener} by specifying
+ * the desired callback methods and the required build models. This builder can
+ * be convenient to quickly construct listeners without needing to write a
+ * dedicated class that implements {@link BuildListener}.
+ *
+ * <p>This builder provides a fluent interface, allowing method calls to be
+ * chained together to register multiple callbacks for different builds.
+ *
+ * @see BuildListener
+ */
 public final class BuildListenerBuilder {
 
     private final List<BuildListener> listeners = new ArrayList<>();
@@ -23,6 +39,15 @@ public final class BuildListenerBuilder {
     BuildListenerBuilder() {
     }
 
+    /**
+     * Constructs a new {@link BuildListener} instance with the configured
+     * callbacks and required build models.
+     *
+     * <p>The returned listener will invoke all registered listener methods
+     * when builds are encountered.
+     *
+     * @return a new {@link BuildListener} instance
+     */
     public BuildListener build() {
         return new BuildListener() {
 
@@ -59,11 +84,28 @@ public final class BuildListenerBuilder {
         };
     }
 
+    /**
+     * Adds the specified build models required by the constructed
+     * {@link BuildListener}. This information is used by a
+     * {@link BuildProcessor} to know which build models to request.
+     *
+     * <p>Calling this method more than once will add the supplied build models
+     * to the set of required build models. Duplicate build models are ignored.
+     *
+     * @param buildModels the build models required by the constructed listener
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder requiredBuildModels(BuildModel... buildModels) {
         requiredBuildModels.addAll(Set.of(buildModels));
         return this;
     }
 
+    /**
+     * Registers a callback function to be invoked when any build is encountered.
+     *
+     * @param onBuild the callback function to execute
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder onBuild(Consumer<Build> onBuild) {
         listeners.add(new BuildListener() {
             @Override
@@ -74,6 +116,13 @@ public final class BuildListenerBuilder {
         return this;
     }
 
+    /**
+     * Registers a callback function to be invoked when a Gradle build is
+     * encountered.
+     *
+     * @param onGradleBuild the callback function to execute
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder onGradleBuild(Consumer<GradleBuild> onGradleBuild) {
         listeners.add(new BuildListener() {
             @Override
@@ -84,6 +133,13 @@ public final class BuildListenerBuilder {
         return this;
     }
 
+    /**
+     * Registers a callback function to be invoked when a Maven build is
+     * encountered.
+     *
+     * @param onMavenBuild the callback function to execute
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder onMavenBuild(Consumer<MavenBuild> onMavenBuild) {
         listeners.add(new BuildListener() {
             @Override
@@ -94,6 +150,13 @@ public final class BuildListenerBuilder {
         return this;
     }
 
+    /**
+     * Registers a callback function to be invoked when a Bazel build is
+     * encountered.
+     *
+     * @param onBazelBuild the callback function to execute
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder onBazelBuild(Consumer<BazelBuild> onBazelBuild) {
         listeners.add(new BuildListener() {
             @Override
@@ -104,6 +167,13 @@ public final class BuildListenerBuilder {
         return this;
     }
 
+    /**
+     * Registers a callback function to be invoked when an sbt build is
+     * encountered.
+     *
+     * @param onSbtBuild the callback function to execute
+     * @return this builder instance for fluent configuration
+     */
     public BuildListenerBuilder onSbtBuild(Consumer<SbtBuild> onSbtBuild) {
         listeners.add(new BuildListener() {
             @Override
