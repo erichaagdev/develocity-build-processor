@@ -4,6 +4,7 @@ import dev.erichaag.develocity.api.BazelBuild;
 import dev.erichaag.develocity.api.Build;
 import dev.erichaag.develocity.api.BuildModel;
 import dev.erichaag.develocity.api.DevelocityClient;
+import dev.erichaag.develocity.api.DevelocityClientException;
 import dev.erichaag.develocity.api.GradleBuild;
 import dev.erichaag.develocity.api.MavenBuild;
 import dev.erichaag.develocity.api.SbtBuild;
@@ -19,8 +20,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import static java.lang.Integer.min;
+import static java.lang.Math.max;
+import static java.lang.Math.pow;
 import static java.time.Instant.now;
+import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 class BuildProcessorWorker {
 
@@ -29,6 +36,10 @@ class BuildProcessorWorker {
     private final DevelocityClient develocity;
     private final ProcessorCache processorCache;
     private final int maxBuildsPerRequest;
+    private final int backOffLimit;
+    private final double backOffFactor;
+    private final int retryLimit;
+    private final double retryFactor;
     private final Instant since;
     private final String query;
     private final List<BuildListener> buildListeners;
@@ -36,13 +47,17 @@ class BuildProcessorWorker {
     private final Set<BuildModel> requiredBuildModels;
 
     private String lastCachedBuildId;
-    private String lastUncachedBuildId;
     private int uncached = 0;
+    private int backOff = 0;
 
     BuildProcessorWorker(
             DevelocityClient develocity,
             ProcessorCache processorCache,
             int maxBuildsPerRequest,
+            int backOffLimit,
+            double backOffFactor,
+            int retryLimit,
+            double retryFactor,
             Instant since,
             String query,
             List<BuildListener> buildListeners,
@@ -51,6 +66,10 @@ class BuildProcessorWorker {
         this.develocity = develocity;
         this.processorCache = processorCache;
         this.maxBuildsPerRequest = maxBuildsPerRequest;
+        this.backOffFactor = backOffFactor;
+        this.backOffLimit = backOffLimit;
+        this.retryLimit = retryLimit;
+        this.retryFactor = retryFactor;
         this.since = since;
         this.query = query;
         this.buildListeners = buildListeners;
@@ -83,39 +102,43 @@ class BuildProcessorWorker {
     }
 
     private void process(Build build) {
+        if (requiredBuildModels.isEmpty()) {
+            notifyListenersFetchedBuild(build);
+            return;
+        }
         final var cachedBuild = processorCache.load(build.getId(), requiredBuildModels);
-        if (uncached == maxBuildsPerRequest || (cachedBuild.isPresent() && uncached > 0)) {
+        if (uncached == currentMaxBuildsPerRequest() || (cachedBuild.isPresent() && uncached > 0)) {
             processUncachedBuilds();
-            lastCachedBuildId = lastUncachedBuildId;
-            uncached = 0;
         }
         if (cachedBuild.isPresent()) {
             processCachedBuild(cachedBuild.get());
             lastCachedBuildId = build.getId();
         } else {
-            lastUncachedBuildId = build.getId();
             uncached++;
         }
     }
 
     private void processCachedBuild(Build cachedBuild) {
-        if (cachedBuild.getAvailableBuildModels().containsAll(requiredBuildModels)) {
+        if (cachedBuild.containsAllRelevantBuildModelsFrom(requiredBuildModels)) {
             notifyListenersCachedBuild(cachedBuild);
             return;
         }
-        // The build has to exist given that it was previously discovered.
+        // The build was discovered so it must exist
         //noinspection OptionalGetWithoutIsPresent
         final var build = develocity.getBuild(cachedBuild.getId(), requiredBuildModels).get();
-        processorCache.save(build);
+        saveToProcessorCache(build);
         notifyListenersFetchedBuild(build);
     }
 
     private void processUncachedBuilds() {
-        final var builds = develocity.getBuilds(query, uncached, lastCachedBuildId, requiredBuildModels);
-        builds.forEach(build -> {
-            processorCache.save(build);
-            notifyListenersFetchedBuild(build);
-        });
+        while (uncached > 0) {
+            final var builds = withRetryAndBackOff(() -> develocity.getBuilds(query, min(currentMaxBuildsPerRequest(), uncached), lastCachedBuildId, requiredBuildModels));
+            uncached -= builds.size();
+            builds.forEach(it -> {
+                saveToProcessorCache(it);
+                notifyListenersFetchedBuild(it);
+            });
+        }
     }
 
     private void notifyListenersDiscoveryStarted() {
@@ -162,8 +185,49 @@ class BuildProcessorWorker {
         });
     }
 
+    private void saveToProcessorCache(Build build) {
+        processorCache.save(build);
+        lastCachedBuildId = build.getId();
+    }
+
+    private int currentMaxBuildsPerRequest() {
+        return max(1, (int) (maxBuildsPerRequest * pow(backOffFactor, backOff)));
+    }
+
+    private List<Build> withRetryAndBackOff(Supplier<List<Build>> getBuilds) {
+        final var exceptions = new ArrayList<RuntimeException>();
+        do {
+            try {
+                return getBuilds.get();
+            } catch (RuntimeException e) {
+                if (e instanceof DevelocityClientException dce) {
+                    if (dce.getStatusCode() == 429 || dce.getStatusCode() == 503) {
+                        if (exceptions.size() < retryLimit) sleep((int) (1_000 * pow(retryFactor, exceptions.size())));
+                        exceptions.add(e);
+                    } else if (dce.getStatusCode() == 504) {
+                        if (++backOff > backOffLimit) throw new BackOffLimitExceededException(backOffLimit);
+                        return emptyList();
+                    } else {
+                        throw e;
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        } while (exceptions.size() <= retryLimit);
+        throw new RetryLimitExceededException(retryLimit, exceptions.getLast());
+    }
+
     private static String getLastId(List<Build> builds) {
         return builds.isEmpty() ? null : builds.getLast().getId();
+    }
+
+    private static void sleep(int milliseconds) {
+        try {
+            MILLISECONDS.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

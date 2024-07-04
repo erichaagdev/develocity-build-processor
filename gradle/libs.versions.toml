@@ -11,7 +11,8 @@ jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api",
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
 [plugins]
-develocity-api-models = { id = "conventions.develocity-api-models" }
-java-library = { id = "java-library" }
-java-test-fixtures = { id = "java-test-fixtures" }
+conventions-develocity-api = { id = "conventions.develocity-api" }
+conventions-release = { id = "conventions.release" }
+gradle-java-library = { id = "java-library" }
+gradle-java-test-fixtures = { id = "java-test-fixtures" }
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }

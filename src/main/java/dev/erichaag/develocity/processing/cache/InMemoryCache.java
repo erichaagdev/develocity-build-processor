@@ -35,11 +35,17 @@ public final class InMemoryCache implements ProcessorCache {
 
     @Override
     public Optional<Build> load(String id, Set<BuildModel> requiredBuildModels) {
-        return ofNullable(buildsById.get(id)).filter(it -> it.getAvailableBuildModels().containsAll(requiredBuildModels));
+        final var build = ofNullable(buildsById.get(id)).filter(it -> it.containsAllRelevantBuildModelsFrom(requiredBuildModels));
+        if (build.isPresent()) {
+            buildQueue.remove(build.get());
+            buildQueue.add(build.get());
+        }
+        return build;
     }
 
     @Override
     public void save(Build build) {
+        if (buildsById.containsKey(build.getId())) buildQueue.remove(build);
         buildsById.put(build.getId(), build);
         buildQueue.add(build);
         if (buildQueue.size() > maxCacheSize) buildsById.remove(buildQueue.remove().getId());

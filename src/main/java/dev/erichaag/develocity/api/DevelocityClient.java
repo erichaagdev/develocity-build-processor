@@ -13,9 +13,9 @@ public interface DevelocityClient {
         return getBuild(id, Set.of(buildModels));
     }
 
-    List<? extends Build> getBuilds(String query, Integer maxBuilds, String fromBuild, Set<BuildModel> buildModels);
+    List<Build> getBuilds(String query, Integer maxBuilds, String fromBuild, Set<BuildModel> buildModels);
 
-    default List<? extends Build> getBuilds(String query, Integer maxBuilds, String fromBuild, BuildModel... buildModels) {
+    default List<Build> getBuilds(String query, Integer maxBuilds, String fromBuild, BuildModel... buildModels) {
         return getBuilds(query, maxBuilds, fromBuild, Set.of(buildModels));
     }
 

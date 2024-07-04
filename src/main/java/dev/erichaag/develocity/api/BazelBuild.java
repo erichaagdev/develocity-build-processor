@@ -1,8 +1,12 @@
 package dev.erichaag.develocity.api;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static dev.erichaag.develocity.api.MethodNotSupportedException.methodNotSupportedForBazel;
 import static java.util.Collections.emptySet;
 
 public final class BazelBuild implements Build {
@@ -31,6 +35,46 @@ public final class BazelBuild implements Build {
     @Override
     public String getBuildAgentVersion() {
         return build.getBuildAgentVersion();
+    }
+
+    @Override
+    public Instant getStartTime() {
+        throw methodNotSupportedForBazel("getStartTime()");
+    }
+
+    @Override
+    public Duration getDuration() {
+        throw methodNotSupportedForBazel("getDuration()");
+    }
+
+    @Override
+    public String getProjectName() {
+        throw methodNotSupportedForBazel("getProjectName()");
+    }
+
+    @Override
+    public List<String> getRequestedWorkUnits() {
+        throw methodNotSupportedForBazel("getRequestedWorkUnits()");
+    }
+
+    @Override
+    public boolean hasFailed() {
+        throw methodNotSupportedForBazel("hasFailed()");
+    }
+
+    @Override
+    public String getUser() {
+        throw methodNotSupportedForBazel("getUser()");
+    }
+
+    @Override
+    public List<String> getTags() {
+        throw methodNotSupportedForBazel("getTags()");
+    }
+
+    @Override
+    public List<Value> getValues() {
+        throw methodNotSupportedForBazel("getValues()");
     }
 
     @Override

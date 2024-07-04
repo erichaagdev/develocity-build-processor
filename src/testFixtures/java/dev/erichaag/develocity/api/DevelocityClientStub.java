@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.IntStream;
+import java.util.function.Supplier;
 
 import static java.lang.Math.min;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.reverseOrder;
-import static java.util.Comparator.comparing;
 
 public final class DevelocityClientStub implements DevelocityClient {
 
@@ -19,12 +17,14 @@ public final class DevelocityClientStub implements DevelocityClient {
     private final List<Build> builds;
     private final Map<String, Build> buildsById = new HashMap<>();
 
+    private Supplier<DevelocityClientException> newDevelocityClientException;
+    private int throwCount;
+
     private DevelocityClientStub(List<Build> builds) {
-        this.builds = builds.stream().sorted(reverseOrder(comparing(Build::getAvailableAt))).toList();
+        this.builds = builds;
         builds.forEach(it -> {
-            if (buildsById.containsKey(it.getId())) {
-                throw new RuntimeException("Duplicate build ID: " + it.getId());
-            }
+            if (it.getId() == null) throw new RuntimeException("All builds must have an ID");
+            if (buildsById.containsKey(it.getId())) throw new RuntimeException("Duplicate build ID: " + it.getId());
             buildsById.put(it.getId(), it);
         });
     }
@@ -34,19 +34,29 @@ public final class DevelocityClientStub implements DevelocityClient {
     }
 
     public static DevelocityClientStub withBuilds(List<Build> builds) {
-        IntStream.range(0, builds.size())
-                .filter(i -> builds.get(i).getId() == null)
-                .forEach(i -> builds.get(i).getBuild().setId("foobarbazqux" + i));
         return new DevelocityClientStub(builds);
+    }
+
+    public void thenThrow(int throwCount, Supplier<DevelocityClientException> newDevelocityClientException) {
+        this.throwCount = throwCount;
+        this.newDevelocityClientException = newDevelocityClientException;
     }
 
     @Override
     public Optional<Build> getBuild(String id, Set<BuildModel> buildModels) {
+        if (throwCount > 0) {
+            throwCount--;
+            throw newDevelocityClientException.get();
+        }
         return builds.stream().filter(it -> it.getId().equals(id)).findFirst();
     }
 
     @Override
-    public List<? extends Build> getBuilds(String query, Integer maxBuilds, String fromBuild, Set<BuildModel> buildModels) {
+    public List<Build> getBuilds(String query, Integer maxBuilds, String fromBuild, Set<BuildModel> buildModels) {
+        if (throwCount > 0) {
+            throwCount--;
+            throw newDevelocityClientException.get();
+        }
         maxBuilds = maxBuilds == null ? defaultMaxBuilds : maxBuilds;
         if (fromBuild == null) {
             return builds.subList(0, min(builds.size(), maxBuilds));

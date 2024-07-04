@@ -9,9 +9,9 @@ import java.util.Optional;
 
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_ATTRIBUTES;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_BUILD_CACHE_PERFORMANCE;
+import static dev.erichaag.develocity.api.Builds.gradle;
 import static dev.erichaag.develocity.api.Builds.gradleAttributes;
 import static dev.erichaag.develocity.api.Builds.gradleProjects;
-import static dev.erichaag.develocity.api.Builds.gradleWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -124,29 +124,29 @@ public abstract class AbstractCacheTest {
 
     @Test
     void givenBuildExistsInCache_whenLoaded_thenBuildIsRetrievedSuccessfully() {
-        final var buildInCache = givenBuildExistsInCache(gradleWith(id, gradleAttributes()));
+        final var buildInCache = givenBuildExistsInCache(gradle(id, gradleAttributes()));
         final var buildFromCache = whenBuildLoadedFromCache(id, GRADLE_ATTRIBUTES);
         thenBuildIsRetrievedSuccessfully(buildInCache, buildFromCache);
     }
 
     @Test
     void givenBuildExistsInCache_whenLoadedButForDifferentModels_thenNoBuildIsRetrieved() {
-        givenBuildExistsInCache(gradleWith(id, gradleAttributes()));
+        givenBuildExistsInCache(gradle(id, gradleAttributes()));
         final var buildFromCache = whenBuildLoadedFromCache(id, GRADLE_BUILD_CACHE_PERFORMANCE);
         thenNoBuildIsRetrieved(buildFromCache);
     }
 
     @Test
     void givenBuildExistsInCacheWithMultipleModels_whenLoadedForOnlyOneModel_thenBuildIsRetrievedSuccessfully() {
-        final var buildInCache = givenBuildExistsInCache(gradleWith(id, gradleAttributes(), gradleProjects()));
+        final var buildInCache = givenBuildExistsInCache(gradle(id, gradleAttributes(), gradleProjects()));
         final var buildFromCache = whenBuildLoadedFromCache(id, GRADLE_ATTRIBUTES);
         thenBuildIsRetrievedSuccessfully(buildInCache, buildFromCache);
     }
 
     @Test
     void givenBuildExistsInCache_whenBuildSavedWithSameId_thenPreviousBuildIsOverwritten() {
-        givenBuildExistsInCache(gradleWith(id));
-        final var newBuildInCache = whenBuildSaved(gradleWith(id, gradleAttributes()));
+        givenBuildExistsInCache(gradle(id));
+        final var newBuildInCache = whenBuildSaved(gradle(id, gradleAttributes()));
         final var buildFromCache = whenBuildLoadedFromCache(id);
         thenBuildIsRetrievedSuccessfully(newBuildInCache, buildFromCache);
     }

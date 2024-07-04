@@ -1,9 +1,10 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    alias(libs.plugins.develocity.api.models)
-    alias(libs.plugins.java.test.fixtures)
-    alias(libs.plugins.java.library)
+    alias(libs.plugins.conventions.develocity.api)
+    alias(libs.plugins.conventions.release)
+    alias(libs.plugins.gradle.java.library)
+    alias(libs.plugins.gradle.java.test.fixtures)
 }
 
 group = "dev.erichaag"
@@ -29,4 +30,31 @@ develocityApi {
 
 val test by testing.suites.getting(JvmTestSuite::class) {
     useJUnitJupiter(libs.versions.junit)
+}
+
+val mavenJava by publishing.publications.getting(MavenPublication::class) {
+    pom {
+        name = "Develocity Build Processor"
+        description = "A library to process Develocity™ build data with built-in caching and retry mechanisms."
+        url = "https://github.com/erichaagdev/develocity-build-processor"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://raw.githubusercontent.com/erichaagdev/develocity-build-processor/main/LICENSE"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                id = "erichaagdev"
+                name = "Eric Haag"
+                email = "eah0592@gmail.com"
+            }
+        }
+        scm {
+            connection = "scm:git:git://github.com/erichaagdev/develocity-build-processor.git"
+            developerConnection = "scm:git:ssh://github.com/erichaagdev/develocity-build-processor.git"
+            url = "https://github.com/erichaagdev/develocity-build-processor"
+        }
+    }
 }

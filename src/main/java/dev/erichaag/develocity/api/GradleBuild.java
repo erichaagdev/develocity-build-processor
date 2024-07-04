@@ -1,11 +1,14 @@
 package dev.erichaag.develocity.api;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static dev.erichaag.develocity.api.AttributesNotPresentException.attributesNotPresent;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_ATTRIBUTES;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_BUILD_CACHE_PERFORMANCE;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_DEPRECATIONS;
@@ -40,6 +43,68 @@ public final class GradleBuild implements Build {
     @Override
     public String getBuildAgentVersion() {
         return build.getBuildAgentVersion();
+    }
+
+    @Override
+    public Instant getStartTime() {
+        return getAttributes()
+                .map(GradleAttributes::getBuildStartTime)
+                .map(Instant::ofEpochMilli)
+                .orElseThrow(attributesNotPresent("getStartTime()"));
+    }
+
+    @Override
+    public Duration getDuration() {
+        return getAttributes()
+                .map(GradleAttributes::getBuildDuration)
+                .map(Duration::ofMillis)
+                .orElseThrow(attributesNotPresent("getDuration()"));
+    }
+
+    @Override
+    public String getProjectName() {
+        return getAttributes()
+                .map(GradleAttributes::getRootProjectName)
+                .orElseThrow(attributesNotPresent("getProjectName()"));
+    }
+
+    @Override
+    public List<String> getRequestedWorkUnits() {
+        return getAttributes()
+                .map(GradleAttributes::getRequestedTasks)
+                .orElseThrow(attributesNotPresent("getRequestedWorkUnits()"));
+    }
+
+    @Override
+    public boolean hasFailed() {
+        return getAttributes()
+                .map(GradleAttributes::getHasFailed)
+                .orElseThrow(attributesNotPresent("hasFailed()"));
+    }
+
+    @Override
+    public String getUser() {
+        return getAttributes()
+                .map(GradleAttributes::getEnvironment)
+                .map(BuildAttributesEnvironment::getUsername)
+                .orElseThrow(attributesNotPresent("getUser()"));
+    }
+
+    @Override
+    public List<String> getTags() {
+        return getAttributes()
+                .map(GradleAttributes::getTags)
+                .orElseThrow(attributesNotPresent("getTags()"));
+    }
+
+    @Override
+    public List<Value> getValues() {
+        return getAttributes()
+                .orElseThrow(attributesNotPresent("getValues()"))
+                .getValues()
+                .stream()
+                .map(Value::new)
+                .toList();
     }
 
     @Override

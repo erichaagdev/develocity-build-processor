@@ -18,9 +18,9 @@ public final class FileSystemCache implements ProcessorCache {
 
     private static final int defaultGranularity = 2;
     private static final Path defaultRootDirectory = Path.of(System.getProperty("user.home"))
-            .resolve(".develocity-failure-insights");
+            .resolve(".develocity-build-processor");
+    private static final ObjectMapper objectMapper = new JsonMapper();
 
-    private final ObjectMapper objectMapper = new JsonMapper();
     private final FileSystemCacheStrategy fileSystemCacheStrategy;
 
     private FileSystemCache(FileSystemCacheStrategy fileSystemCacheStrategy) {
@@ -42,7 +42,7 @@ public final class FileSystemCache implements ProcessorCache {
             if (cachedBuildFile.exists()) {
                 return Optional.of(objectMapper.readValue(cachedBuildFile, ApiBuild.class))
                         .map(Build::from)
-                        .filter(it -> it.getAvailableBuildModels().containsAll(requiredBuildModels));
+                        .filter(it -> it.containsAllRelevantBuildModelsFrom(requiredBuildModels));
             }
         } catch (IOException ignored) {
             //noinspection ResultOfMethodCallIgnored

@@ -7,8 +7,8 @@ plugins {
 develocity {
     buildScan {
         termsOfUseAgree = "yes"
-        termsOfUseUrl = "https://gradle.com/terms-of-service"
+        termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
     }
 }
 
-rootProject.name = "develocity-build-scan-processor"
+rootProject.name = "develocity-build-processor"

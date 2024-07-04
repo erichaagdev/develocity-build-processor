@@ -1,8 +1,12 @@
 package dev.erichaag.develocity.api;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static dev.erichaag.develocity.api.MethodNotSupportedException.methodNotSupportedForSbt;
 import static java.util.Collections.emptySet;
 
 public final class SbtBuild implements Build {
@@ -34,6 +38,46 @@ public final class SbtBuild implements Build {
     }
 
     @Override
+    public Instant getStartTime() {
+        throw methodNotSupportedForSbt("getStartTime()");
+    }
+
+    @Override
+    public Duration getDuration() {
+        throw methodNotSupportedForSbt("getDuration()");
+    }
+
+    @Override
+    public String getProjectName() {
+        throw methodNotSupportedForSbt("getProjectName()");
+    }
+
+    @Override
+    public List<String> getRequestedWorkUnits() {
+        throw methodNotSupportedForSbt("getRequestedWorkUnits()");
+    }
+
+    @Override
+    public boolean hasFailed() {
+        throw methodNotSupportedForSbt("hasFailed()");
+    }
+
+    @Override
+    public String getUser() {
+        throw methodNotSupportedForSbt("getUser()");
+    }
+
+    @Override
+    public List<String> getTags() {
+        throw methodNotSupportedForSbt("getTags()");
+    }
+
+    @Override
+    public List<Value> getValues() {
+        throw methodNotSupportedForSbt("getValues()");
+    }
+
+    @Override
     public Set<BuildModel> getAvailableBuildModels() {
         return emptySet();
     }
@@ -62,4 +106,3 @@ public final class SbtBuild implements Build {
     }
 
 }
-
