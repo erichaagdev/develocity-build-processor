@@ -2,9 +2,6 @@ package dev.erichaag.develocity.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import dev.erichaag.develocity.api.BuildProcessorListener.CachedBuildEvent;
-import dev.erichaag.develocity.api.BuildProcessorListener.DiscoveryStartedEvent;
-import dev.erichaag.develocity.api.BuildProcessorListener.FetchedBuildEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static dev.erichaag.develocity.api.BuildProcessorListener.DiscoveryFinishedEvent;
-import static dev.erichaag.develocity.api.BuildProcessorListener.ProcessingFinishedEvent;
-import static dev.erichaag.develocity.api.BuildProcessorListener.ProcessingStartedEvent;
 import static java.time.Instant.now;
 import static java.util.Optional.empty;
 
