@@ -1,13 +1,15 @@
 package dev.erichaag.develocity.api;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface DevelocityClient {
 
-    Build getBuild(String id, Set<BuildModel> buildModels);
+    Optional<Build> getBuild(String id, Set<BuildModel> buildModels);
 
-    default Build getBuild(String id, BuildModel... buildModels) {
+    default Optional<Build> getBuild(String id, BuildModel... buildModels) {
         return getBuild(id, Set.of(buildModels));
     }
 
@@ -15,6 +17,14 @@ public interface DevelocityClient {
 
     default List<? extends Build> getBuilds(String query, Integer maxBuilds, String fromBuild, BuildModel... buildModels) {
         return getBuilds(query, maxBuilds, fromBuild, Set.of(buildModels));
+    }
+
+    static HttpClientDevelocityClientBuilder forServer(URI serverUrl) {
+        return new HttpClientDevelocityClientBuilder(serverUrl);
+    }
+
+    static HttpClientDevelocityClientBuilder forServer(String serverUrl) {
+        return forServer(URI.create(serverUrl));
     }
 
 }

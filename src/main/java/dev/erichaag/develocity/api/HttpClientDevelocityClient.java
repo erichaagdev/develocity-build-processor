@@ -15,11 +15,13 @@ import java.net.http.HttpResponse.BodyHandler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static java.net.http.HttpResponse.BodyHandlers.ofByteArray;
+import static java.util.Optional.empty;
 
 public final class HttpClientDevelocityClient implements DevelocityClient {
 
@@ -30,17 +32,20 @@ public final class HttpClientDevelocityClient implements DevelocityClient {
 
     private static final int maxRetries = 5;
 
-    public HttpClientDevelocityClient(URI serverUrl) {
+    public HttpClientDevelocityClient(URI serverUrl, String accessKey, HttpClient httpClient) {
         this.serverUrl = serverUrl;
-        this.accessKey = AccessKeyProvider.lookupAccessKey(serverUrl).orElse(null);
-        this.httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
+        this.accessKey = accessKey;
+        this.httpClient = httpClient;
         this.objectMapper = new JsonMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
-    public Build getBuild(String id, Set<BuildModel> buildModels) {
+    public Optional<Build> getBuild(String id, Set<BuildModel> buildModels) {
         final var response = sendRequest("/api/builds/" + id, null, false, null, null, buildModels);
-        return Build.from(handleResponse(response, new TypeReference<>() {}));
+        if (response.statusCode() == 404) {
+            return empty();
+        }
+        return Optional.of(Build.from(handleResponse(response, new TypeReference<>() {})));
     }
 
     @Override

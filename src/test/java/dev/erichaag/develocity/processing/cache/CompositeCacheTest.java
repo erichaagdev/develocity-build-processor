@@ -1,64 +1,53 @@
 package dev.erichaag.develocity.processing.cache;
 
-import org.junit.jupiter.api.BeforeEach;
+import dev.erichaag.develocity.api.Build;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Path;
-
-import static dev.erichaag.develocity.api.Builds.gradleBuild;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.erichaag.develocity.api.Builds.gradle;
 
 final class CompositeCacheTest extends AbstractCacheTest {
 
-    InMemoryCache inMemoryCache;
-    FileSystemCache fileSystemCache;
+    private static final String id = "foobarbazqux1";
 
-    @BeforeEach
-    void beforeEach(@TempDir Path temporaryCacheDirectory) {
-        this.inMemoryCache = InMemoryCache.withDefaultSize();
-        this.fileSystemCache = FileSystemCache.withStrategy(new PartitioningFileSystemCacheStrategy(temporaryCacheDirectory, 2));
-        this.cache = CompositeCache.firstChecking(inMemoryCache)
-                .followedBy(fileSystemCache);
+    private final InMemoryCache primaryCache = InMemoryCache.withDefaultSize();
+    private final InMemoryCache secondaryCache = InMemoryCache.withDefaultSize();
+
+    @Override
+    protected ProcessorCache createCache() {
+        return CompositeCache.firstChecking(primaryCache).followedBy(secondaryCache);
     }
 
     @Test
-    void whenSavedToCompositeCache_thenBuildIsSavedToAllCaches() {
-        final var id = "foobarbazqux1";
-        final var savedBuild = gradleBuild(id);
-        cache.save(savedBuild);
-        final var inMemoryBuild = inMemoryCache.load(id);
-        final var fileSystemBuild = fileSystemCache.load(id);
-        assertTrue(inMemoryBuild.isPresent());
-        assertEquals(savedBuild, inMemoryBuild.get());
-        assertTrue(fileSystemBuild.isPresent());
-        assertEquals(savedBuild, fileSystemBuild.get());
+    void whenSavedToCompositeCache_thenBuildIsReplicatedToAllCaches() {
+        final var buildSavedToCompositeCache = whenBuildSaved(gradle(id));
+        thenBuildIsRetrievedSuccessfully(buildSavedToCompositeCache, primaryCache.load(id));
+        thenBuildIsRetrievedSuccessfully(buildSavedToCompositeCache, secondaryCache.load(id));
     }
 
     @Test
-    void givenBuildExistsInMemoryButNotOnFileSystem_whenLoaded_thenBuildIsLoadedButBuildIsNotPersistedToFileSystem() {
-        final var id = "foobarbazqux1";
-        final var inMemoryBuild = gradleBuild(id);
-        inMemoryCache.save(inMemoryBuild);
-        final var compositeBuild = cache.load(id);
-        final var fileSystemBuild = fileSystemCache.load(id);
-        assertTrue(compositeBuild.isPresent());
-        assertEquals(inMemoryBuild, compositeBuild.get());
-        assertTrue(fileSystemBuild.isEmpty());
+    void givenBuildExistsInPrimaryCacheOnly_whenLoaded_thenBuildIsNotReplicatedToSecondaryCache() {
+        final var buildInPrimaryCache = givenBuildExistsInPrimaryCache(gradle(id));
+        final var buildFromCompositeCache = whenBuildLoadedFromCache(id);
+        thenBuildIsRetrievedSuccessfully(buildInPrimaryCache, buildFromCompositeCache);
+        thenNoBuildIsRetrieved(secondaryCache.load(id));
     }
 
     @Test
-    void givenBuildExistsOnFileSystemButNotInMemory_whenLoaded_thenBuildIsLoadedAndBuildIsPersistedToMemory() {
-        final var id = "foobarbazqux1";
-        final var fileSystemBuild = gradleBuild(id);
-        fileSystemCache.save(fileSystemBuild);
-        final var compositeBuild = cache.load(id);
-        final var inMemoryBuild = inMemoryCache.load(id);
-        assertTrue(compositeBuild.isPresent());
-        assertEquals(fileSystemBuild, compositeBuild.get());
-        assertTrue(inMemoryBuild.isPresent());
-        assertEquals(fileSystemBuild, inMemoryBuild.get());
+    void givenBuildExistsInSecondaryCacheOnly_whenLoaded_thenBuildIsReplicatedToPrimaryCache() {
+        final var buildInSecondaryCache = givenBuildExistsInSecondaryCache(gradle(id));
+        final var buildFromCompositeCache = whenBuildLoadedFromCache(id);
+        thenBuildIsRetrievedSuccessfully(buildInSecondaryCache, buildFromCompositeCache);
+        thenBuildIsRetrievedSuccessfully(buildInSecondaryCache, primaryCache.load(id));
+    }
+
+    private Build givenBuildExistsInPrimaryCache(Build build) {
+        primaryCache.save(build);
+        return build;
+    }
+
+    private Build givenBuildExistsInSecondaryCache(Build build) {
+        secondaryCache.save(build);
+        return build;
     }
 
 }

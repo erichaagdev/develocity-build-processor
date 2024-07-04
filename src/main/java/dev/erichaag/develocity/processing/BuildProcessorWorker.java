@@ -103,7 +103,9 @@ class BuildProcessorWorker {
             notifyListenersCachedBuild(cachedBuild);
             return;
         }
-        final var build = develocity.getBuild(cachedBuild.getId(), requiredBuildModels);
+        // The build has to exist given that it was previously discovered.
+        //noinspection OptionalGetWithoutIsPresent
+        final var build = develocity.getBuild(cachedBuild.getId(), requiredBuildModels).get();
         processorCache.save(build);
         notifyListenersFetchedBuild(build);
     }
