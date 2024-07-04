@@ -1,8 +1,7 @@
 package dev.erichaag.develocity.api;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
-public record DiscoveryStartedEvent(Instant triggeredAt, ZonedDateTime since) implements BuildProcessorEvent {
+public record DiscoveryStartedEvent(Instant triggeredAt, Instant since) implements BuildProcessorEvent {
 
 }

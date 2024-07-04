@@ -3,8 +3,15 @@ package dev.erichaag.develocity.api;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_ATTRIBUTES;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_BUILD_CACHE_PERFORMANCE;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_DEPENDENCY_RESOLUTION;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_MODULES;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toUnmodifiableSet;
 
 public final class MavenBuild implements Build {
 
@@ -35,6 +42,16 @@ public final class MavenBuild implements Build {
     }
 
     @Override
+    public Set<BuildModel> getAvailableBuildModels() {
+        final var buildModels = Stream.<BuildModel>builder();
+        if (getAttributes().isPresent()) buildModels.add(MAVEN_ATTRIBUTES);
+        if (getBuildCachePerformance().isPresent()) buildModels.add(MAVEN_BUILD_CACHE_PERFORMANCE);
+        if (getDependencyResolution().isPresent()) buildModels.add(MAVEN_DEPENDENCY_RESOLUTION);
+        if (getModules().isPresent()) buildModels.add(MAVEN_MODULES);
+        return buildModels.build().collect(toUnmodifiableSet());
+    }
+
+    @Override
     public ApiBuild getBuild() {
         return build;
     }
@@ -45,7 +62,7 @@ public final class MavenBuild implements Build {
                 .map(BuildModelsMavenAttributes::getModel);
     }
 
-    public Optional<MavenBuildCachePerformance> getPerformance() {
+    public Optional<MavenBuildCachePerformance> getBuildCachePerformance() {
         return ofNullable(build.getModels())
                 .map(BuildModels::getMavenBuildCachePerformance)
                 .map(BuildModelsMavenBuildCachePerformance::getModel);

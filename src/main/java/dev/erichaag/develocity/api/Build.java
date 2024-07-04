@@ -1,5 +1,7 @@
 package dev.erichaag.develocity.api;
 
+import java.util.Set;
+
 public sealed interface Build permits GradleBuild, MavenBuild, BazelBuild, SbtBuild {
 
     String getId();
@@ -9,6 +11,8 @@ public sealed interface Build permits GradleBuild, MavenBuild, BazelBuild, SbtBu
     String getBuildToolVersion();
 
     String getBuildAgentVersion();
+
+    Set<BuildModel> getAvailableBuildModels();
 
     ApiBuild getBuild();
 

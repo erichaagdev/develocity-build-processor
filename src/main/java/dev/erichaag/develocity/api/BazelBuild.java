@@ -1,6 +1,9 @@
 package dev.erichaag.develocity.api;
 
 import java.util.Objects;
+import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 public final class BazelBuild implements Build {
 
@@ -28,6 +31,11 @@ public final class BazelBuild implements Build {
     @Override
     public String getBuildAgentVersion() {
         return build.getBuildAgentVersion();
+    }
+
+    @Override
+    public Set<BuildModel> getAvailableBuildModels() {
+        return emptySet();
     }
 
     @Override

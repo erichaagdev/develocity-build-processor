@@ -6,6 +6,10 @@ import static java.util.Collections.emptySet;
 
 public interface BuildProcessorListener {
 
+    static BuildProcessorListenerBuilder builder() {
+        return new BuildProcessorListenerBuilder();
+    }
+
     default Set<BuildModel> getRequiredBuildModels() {
         return emptySet();
     }
