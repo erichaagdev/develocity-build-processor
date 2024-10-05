@@ -36,13 +36,13 @@ dependencies {
     develocityApiSpecification(develocityApiExtension.version.map { "com.gradle:develocity-api-specification:$it" })
     implementation(libs.findLibrary("jackson-annotations").get())
     implementation(libs.findLibrary("jackson-databind").get())
-    implementation(libs.findLibrary("jakarta-annotation-api").get())
+    implementation(libs.findLibrary("jakarta-annotations").get())
 }
 
 pluginManager.withPlugin("java-library") {
     dependencies {
         "api"(libs.findLibrary("jackson-annotations").get())
-        "api"(libs.findLibrary("jakarta-annotation-api").get())
+        "api"(libs.findLibrary("jakarta-annotations").get())
     }
 }
 

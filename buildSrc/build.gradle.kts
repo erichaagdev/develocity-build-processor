@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-    implementation(plugin(libs.plugins.openapi.generator))
+    implementation(plugin(libs.plugins.openapiGenerator))
 }
 
 fun plugin(plugin: Provider<PluginDependency>) =

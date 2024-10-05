@@ -1,10 +1,10 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "unused")
 
 plugins {
-    alias(libs.plugins.conventions.develocity.api)
-    alias(libs.plugins.conventions.release)
-    alias(libs.plugins.gradle.java.library)
-    alias(libs.plugins.gradle.java.test.fixtures)
+    alias(libs.plugins.develocityApiConventions)
+    alias(libs.plugins.javaLibrary)
+    alias(libs.plugins.javaTestFixtures)
+    alias(libs.plugins.releaseConventions)
 }
 
 group = "dev.erichaag"
