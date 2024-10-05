@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "unused")
 
 plugins {
     id("java")
@@ -68,6 +68,7 @@ openApiGenerate {
         "hideGenerationTimestamp" to "true",
         "library" to "native",
         "openApiNullable" to "false",
+        "supportUrlQuery" to "false",
         "useBeanValidation" to "false",
         "useJakartaEe" to "true",
     )
