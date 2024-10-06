@@ -11,8 +11,11 @@ import java.util.stream.Stream;
 import static dev.erichaag.develocity.api.AttributesNotPresentException.attributesNotPresent;
 import static dev.erichaag.develocity.api.BuildModel.MAVEN_ATTRIBUTES;
 import static dev.erichaag.develocity.api.BuildModel.MAVEN_BUILD_CACHE_PERFORMANCE;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_BUILD_PROFILE_OVERVIEW;
 import static dev.erichaag.develocity.api.BuildModel.MAVEN_DEPENDENCY_RESOLUTION;
 import static dev.erichaag.develocity.api.BuildModel.MAVEN_MODULES;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_PLUGINS;
+import static dev.erichaag.develocity.api.BuildModel.MAVEN_RESOURCE_USAGE;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
@@ -111,8 +114,11 @@ public final class MavenBuild implements Build {
         final var buildModels = Stream.<BuildModel>builder();
         if (getAttributes().isPresent()) buildModels.add(MAVEN_ATTRIBUTES);
         if (getBuildCachePerformance().isPresent()) buildModels.add(MAVEN_BUILD_CACHE_PERFORMANCE);
+        if (getBuildProfileOverview().isPresent()) buildModels.add(MAVEN_BUILD_PROFILE_OVERVIEW);
         if (getDependencyResolution().isPresent()) buildModels.add(MAVEN_DEPENDENCY_RESOLUTION);
         if (getModules().isPresent()) buildModels.add(MAVEN_MODULES);
+        if (getPlugins().isPresent()) buildModels.add(MAVEN_PLUGINS);
+        if (getResourceUsage().isPresent()) buildModels.add(MAVEN_RESOURCE_USAGE);
         return buildModels.build().collect(toUnmodifiableSet());
     }
 
@@ -133,6 +139,12 @@ public final class MavenBuild implements Build {
                 .map(BuildModelsMavenBuildCachePerformance::getModel);
     }
 
+    public Optional<MavenBuildProfileOverview> getBuildProfileOverview() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getMavenBuildProfileOverview)
+                .map(BuildModelsMavenBuildProfileOverview::getModel);
+    }
+
     public Optional<MavenDependencyResolution> getDependencyResolution() {
         return ofNullable(build.getModels())
                 .map(BuildModels::getMavenDependencyResolution)
@@ -143,6 +155,18 @@ public final class MavenBuild implements Build {
         return ofNullable(build.getModels())
                 .map(BuildModels::getMavenModules)
                 .map(BuildModelsMavenModules::getModel);
+    }
+
+    public Optional<MavenPlugins> getPlugins() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getMavenPlugins)
+                .map(BuildModelsMavenPlugins::getModel);
+    }
+
+    public Optional<MavenResourceUsage> getResourceUsage() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getMavenResourceUsage)
+                .map(BuildModelsMavenResourceUsage::getModel);
     }
 
     @Override

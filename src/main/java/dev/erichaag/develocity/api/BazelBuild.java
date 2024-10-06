@@ -4,10 +4,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static dev.erichaag.develocity.api.AttributesNotPresentException.attributesNotPresent;
+import static dev.erichaag.develocity.api.BuildModel.BAZEL_ATTRIBUTES;
+import static dev.erichaag.develocity.api.BuildModel.BAZEL_CRITICAL_PATH;
 import static dev.erichaag.develocity.api.MethodNotSupportedException.methodNotSupportedForBazel;
-import static java.util.Collections.emptySet;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toUnmodifiableSet;
 
 public final class BazelBuild implements Build {
 
@@ -39,12 +45,18 @@ public final class BazelBuild implements Build {
 
     @Override
     public Instant getStartTime() {
-        throw methodNotSupportedForBazel("getStartTime()");
+        return getAttributes()
+                .map(BazelAttributes::getBuildStartTime)
+                .map(Instant::ofEpochMilli)
+                .orElseThrow(attributesNotPresent("getStartTime()"));
     }
 
     @Override
     public Duration getDuration() {
-        throw methodNotSupportedForBazel("getDuration()");
+        return getAttributes()
+                .map(BazelAttributes::getBuildDuration)
+                .map(Duration::ofMillis)
+                .orElseThrow(attributesNotPresent("getDuration()"));
     }
 
     @Override
@@ -54,7 +66,9 @@ public final class BazelBuild implements Build {
 
     @Override
     public List<String> getRequestedWorkUnits() {
-        throw methodNotSupportedForBazel("getRequestedWorkUnits()");
+        return getAttributes()
+                .map(BazelAttributes::getTargetPatterns)
+                .orElseThrow(attributesNotPresent("getRequestedWorkUnits()"));
     }
 
     @Override
@@ -64,27 +78,50 @@ public final class BazelBuild implements Build {
 
     @Override
     public String getUser() {
-        throw methodNotSupportedForBazel("getUser()");
+        return getAttributes()
+                .map(BazelAttributes::getUser)
+                .orElseThrow(attributesNotPresent("getUser()"));
     }
 
     @Override
     public List<String> getTags() {
-        throw methodNotSupportedForBazel("getTags()");
+        return getAttributes()
+                .map(BazelAttributes::getTags)
+                .orElseThrow(attributesNotPresent("getTags()"));
     }
 
     @Override
     public List<Value> getValues() {
-        throw methodNotSupportedForBazel("getValues()");
+        return getAttributes()
+                .orElseThrow(attributesNotPresent("getValues()"))
+                .getValues()
+                .stream()
+                .map(Value::new)
+                .toList();
     }
-
     @Override
     public Set<BuildModel> getAvailableBuildModels() {
-        return emptySet();
+        final var buildModels = Stream.<BuildModel>builder();
+        if (getAttributes().isPresent()) buildModels.add(BAZEL_ATTRIBUTES);
+        if (getCriticalPath().isPresent()) buildModels.add(BAZEL_CRITICAL_PATH);
+        return buildModels.build().collect(toUnmodifiableSet());
     }
 
     @Override
     public ApiBuild getBuild() {
         return build;
+    }
+
+    public Optional<BazelAttributes> getAttributes() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getBazelAttributes)
+                .map(BuildModelsBazelAttributes::getModel);
+    }
+
+    public Optional<BazelCriticalPath> getCriticalPath() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getBazelCriticalPath)
+                .map(BuildModelsBazelCriticalPath::getModel);
     }
 
     @Override

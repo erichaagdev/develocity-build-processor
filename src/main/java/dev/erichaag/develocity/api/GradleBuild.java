@@ -9,11 +9,16 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static dev.erichaag.develocity.api.AttributesNotPresentException.attributesNotPresent;
+import static dev.erichaag.develocity.api.BuildModel.GRADLE_ARTIFACT_TRANSFORM_EXECUTIONS;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_ATTRIBUTES;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_BUILD_CACHE_PERFORMANCE;
+import static dev.erichaag.develocity.api.BuildModel.GRADLE_BUILD_PROFILE_OVERVIEW;
+import static dev.erichaag.develocity.api.BuildModel.GRADLE_CONFIGURATION_CACHE;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_DEPRECATIONS;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_NETWORK_ACTIVITY;
+import static dev.erichaag.develocity.api.BuildModel.GRADLE_PLUGINS;
 import static dev.erichaag.develocity.api.BuildModel.GRADLE_PROJECTS;
+import static dev.erichaag.develocity.api.BuildModel.GRADLE_RESOURCE_USAGE;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 
@@ -110,11 +115,16 @@ public final class GradleBuild implements Build {
     @Override
     public Set<BuildModel> getAvailableBuildModels() {
         final var buildModels = Stream.<BuildModel>builder();
+        if (getArtifactTransformExecutions().isPresent()) buildModels.add(GRADLE_ARTIFACT_TRANSFORM_EXECUTIONS);
         if (getAttributes().isPresent()) buildModels.add(GRADLE_ATTRIBUTES);
         if (getBuildCachePerformance().isPresent()) buildModels.add(GRADLE_BUILD_CACHE_PERFORMANCE);
+        if (getBuildProfileOverview().isPresent()) buildModels.add(GRADLE_BUILD_PROFILE_OVERVIEW);
+        if (getConfigurationCache().isPresent()) buildModels.add(GRADLE_CONFIGURATION_CACHE);
         if (getDeprecations().isPresent()) buildModels.add(GRADLE_DEPRECATIONS);
         if (getNetworkActivity().isPresent()) buildModels.add(GRADLE_NETWORK_ACTIVITY);
+        if (getPlugins().isPresent()) buildModels.add(GRADLE_PLUGINS);
         if (getProjects().isPresent()) buildModels.add(GRADLE_PROJECTS);
+        if (getResourceUsage().isPresent()) buildModels.add(GRADLE_RESOURCE_USAGE);
         return buildModels.build().collect(toUnmodifiableSet());
     }
 
@@ -142,6 +152,18 @@ public final class GradleBuild implements Build {
                 .map(BuildModelsGradleBuildCachePerformance::getModel);
     }
 
+    public Optional<GradleBuildProfileOverview> getBuildProfileOverview() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getGradleBuildProfileOverview)
+                .map(BuildModelsGradleBuildProfileOverview::getModel);
+    }
+
+    public Optional<GradleConfigurationCache> getConfigurationCache() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getGradleConfigurationCache)
+                .map(BuildModelsGradleConfigurationCache::getModel);
+    }
+
     public Optional<List<GradleDeprecationEntry>> getDeprecations() {
         return ofNullable(build.getModels())
                 .map(BuildModels::getGradleDeprecations)
@@ -155,10 +177,22 @@ public final class GradleBuild implements Build {
                 .map(BuildModelsGradleNetworkActivity::getModel);
     }
 
+    public Optional<GradlePlugins> getPlugins() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getGradlePlugins)
+                .map(BuildModelsGradlePlugins::getModel);
+    }
+
     public Optional<List<GradleProject>> getProjects() {
         return ofNullable(build.getModels())
                 .map(BuildModels::getGradleProjects)
                 .map(BuildModelsGradleProjects::getModel);
+    }
+
+    public Optional<GradleResourceUsage> getResourceUsage() {
+        return ofNullable(build.getModels())
+                .map(BuildModels::getGradleResourceUsage)
+                .map(BuildModelsGradleResourceUsage::getModel);
     }
 
     @Override

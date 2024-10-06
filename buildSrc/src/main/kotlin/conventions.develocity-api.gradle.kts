@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage", "unused")
+@file:Suppress("UnstableApiUsage", "unused", "HasPlatformType")
 
 plugins {
     id("java")
@@ -85,8 +85,18 @@ val generateDevelocityApiModels by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir(name))
 }
 
+val checkSupportedBuildModels by tasks.registering(CheckSupportedBuildModels::class) {
+    inputSpecification = resolvableDevelocityApiSpecification
+    sources = sourceSets.main.map { it.java.sourceDirectories }
+    outputReportDirectory = layout.buildDirectory.dir("reports/$name")
+}
+
 val generate by tasks.registering {
     dependsOn(generateDevelocityApiModels)
+}
+
+val check by tasks.getting {
+    dependsOn(checkSupportedBuildModels)
 }
 
 sourceSets {
@@ -115,6 +125,37 @@ abstract class PostProcessDevelocityApiSpecification : DefaultTask() {
             .replace(" Build:", " ApiBuild:")
             .replace("Build'", "ApiBuild'")
             .run { outputSpecification.get().asFile.writeText(this) }
+    }
+
+}
+
+abstract class CheckSupportedBuildModels : DefaultTask() {
+
+    @get:InputFiles
+    abstract val inputSpecification: Property<FileCollection>
+
+    @get:InputFiles
+    abstract val sources: Property<FileCollection>
+
+    @get:OutputDirectory
+    abstract val outputReportDirectory: DirectoryProperty
+
+    @TaskAction
+    fun action() {
+        val buildModelJava = sources.get().asFileTree.matching { include("**/BuildModel.java") }.singleFile.readText()
+        val requiredBuildModels = inputSpecification.get()
+            .singleFile
+            .readLines()
+            .filter { it.startsWith("  /api/builds/{id}") && it.endsWith(":") && it != "  /api/builds/{id}:" }
+            .map { it.removeSurrounding("  /api/builds/{id}/", ":") }
+        val unsupportedBuildModels = requiredBuildModels.filter { !buildModelJava.contains(it) }
+        if (unsupportedBuildModels.isNotEmpty()) {
+            throw GradleException("Unsupported build models: ${unsupportedBuildModels.sorted().joinToString(", ")}")
+        }
+        outputReportDirectory.get()
+            .asFile
+            .resolve("supported-models.txt")
+            .writeText(requiredBuildModels.subtract(unsupportedBuildModels).sorted().joinToString("\n"))
     }
 
 }

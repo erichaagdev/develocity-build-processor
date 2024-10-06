@@ -25,7 +25,7 @@ java {
 }
 
 develocityApi {
-    version = "2024.1"
+    version = "2024.2"
 }
 
 val test by testing.suites.getting(JvmTestSuite::class) {
