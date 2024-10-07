@@ -17,7 +17,10 @@ import dev.erichaag.develocity.processing.event.ProcessingStartedEvent;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -381,6 +384,52 @@ public final class BuildProcessorBuilder {
      */
     public BuildProcessor process(OffsetDateTime since, String query) {
         return process(since.toInstant(), query);
+    }
+
+    /**
+     * Builds and starts the {@link BuildProcessor}, processing builds since the
+     * given date at the beginning of the day using the system default timezone.
+     *
+     * @param since the date and time from which to start processing builds
+     * @return the built {@link BuildProcessor}
+     */
+    public BuildProcessor process(LocalDate since) {
+        return process(since, null);
+    }
+
+    /**
+     * Builds and starts the {@link BuildProcessor}, processing builds since the
+     * given date at the beginning of the day using the system default timezone.
+     *
+     * @param since the date and time from which to start processing builds
+     * @param query a query string to filter builds
+     * @return the built {@link BuildProcessor}
+     */
+    public BuildProcessor process(LocalDate since, String query) {
+        return process(since.atStartOfDay(ZoneId.systemDefault()), query);
+    }
+
+    /**
+     * Builds and starts the {@link BuildProcessor}, processing builds since the
+     * given date and time using the system's default timezone.
+     *
+     * @param since the date and time from which to start processing builds
+     * @return the built {@link BuildProcessor}
+     */
+    public BuildProcessor process(LocalDateTime since) {
+        return process(since, null);
+    }
+
+    /**
+     * Builds and starts the {@link BuildProcessor}, processing builds since the
+     * given date and time using the system's default timezone.
+     *
+     * @param since the date and time from which to start processing builds
+     * @param query a query string to filter builds
+     * @return the built {@link BuildProcessor}
+     */
+    public BuildProcessor process(LocalDateTime since, String query) {
+        return process(since.atZone(ZoneId.systemDefault()), query);
     }
 
     /**
