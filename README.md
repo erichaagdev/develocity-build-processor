@@ -2,10 +2,8 @@
 
 A library for fetching, processing, and analyzing Develocity build data with a fluent API, built-in caching, and retry mechanisms.
 
-The library aims to simplify interactions with the `/api/builds/**` endpoints of the Develocity API by providing a high level API with proper typed classes for each build tool.
-When using this library, you'll focus less on how to interact with the Develocity API and more on the processing and analysis of build data.
-
-Learn more about how to get started and leverage the full potential of Develocity and your build data below.
+The library aims to simplify working with the `/api/builds/**` endpoints from the Develocity API by providing a high level API with built-in convenience methods covering common use cases and proper typed classes for each build tool.
+When using this library, you'll focus more on the actual processing and analysis of build data and less on the underlying Develocity API.
 
 ## Getting started
 
@@ -55,8 +53,8 @@ A `BuildProcessor` works much like a Java `Stream` in that it has both *intermed
 
 #### Intermediate operations
 
-A `BuildProcessor` has several _intermediate operations_ used for the actual processing of data.
-There are several operators for use depending on your use case.
+A `BuildProcessor` has several _intermediate operations_ used for processing build data.
+There are several operators available to use depending on your use case.
 
 ```java
 // Print the ID of any build
@@ -91,9 +89,9 @@ processor.process(LocalDateTime.parse("2024-10-05T10:15:30"), "buildTool:gradle"
 
 #### Build models
 
-By default, the Develocity API returns a very limited amount of data about each build.
-To get more details, you need to define the *build models* to be returned.
-The more build models that are requested, the longer the query will take.
+By default, the Develocity API returns very limited data about each build.
+To get more details, you need to declare the *build models* you require.
+The more build models that are required, the longer the query will take.
 
 This library works similarly.
 To use the additional data from the requested build models, cast the returned `Build` into a `BazelBuild`, `GradleBuild`, `MavenBuild`, or `SbtBuild`.
@@ -121,7 +119,7 @@ processor.onGradleBuild(gradleBuild -> {
 });
 ```
 
-Given requesting the *attributes* build models is so common, typically because this is the build model containing the custom values and tags, it's possible to query for these directly through the top-level `Build` object without casting.
+Given requesting the *attributes* build models is so common, it's possible to query for custom values, tags, and several other attributes shared between each build tool directly through the top-level `Build` object without casting.
 
 ```java
 processor.withRequiredBuildModels(GRADLE_ATTRIBUTES, MAVEN_ATTRIBUTES);
