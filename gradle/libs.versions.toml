@@ -2,7 +2,7 @@
 jackson-core = "2.18.0"
 jakarta-annotations = "3.0.0"
 junit = "5.11.2"
-openapi-generator = "7.8.0"
+openapi-generator = "7.9.0"
 
 [libraries]
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-core" }
