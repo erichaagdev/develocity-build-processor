@@ -7,9 +7,15 @@ When using this library, you'll focus more on the actual processing and analysis
 
 ## Getting started
 
-### Gradle
+### Requirements
 
-Add the following to your `build.gradle(.kts)` file.
+- Java 21 or later
+
+### Adding to your build
+
+#### Gradle
+
+Add the following to your `build.gradle(.kts)` file:
 
 ```kotlin
 dependencies {
@@ -17,7 +23,21 @@ dependencies {
 }
 ```
 
+#### Maven
+
+Add the following to your `pom.xml` file:
+
+```xml
+<dependency>
+    <groupId>dev.erichaag</groupId>
+    <artifactId>develocity-build-processor</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
 ### Example
+
+The following is a basic example of what typical usage looks like: 
 
 ```java
 final var numberOfBuilds = new AtomicInteger();
@@ -94,32 +114,45 @@ To get more details, you need to declare the *build models* you require.
 The more build models that are required, the longer the query will take.
 
 This library works similarly.
-To use the additional data from the requested build models, cast the returned `Build` into a `BazelBuild`, `GradleBuild`, `MavenBuild`, or `SbtBuild`.
+To use the additional data from the requested build models, you must cast the returned `Build` into a `BazelBuild`, `GradleBuild`, `MavenBuild`, or `SbtBuild`, or use one of the build tool-specific call backs.
+
+The following example prints either the requested tasks for Gradle or requested goals for Maven, then prints the Gradle version of each encountered build:
 
 ```java
+// These build models will be available to us during processing
 processor.withRequiredBuildModels(GRADLE_ATTRIBUTES, MAVEN_ATTRIBUTES);
 
+// Print the requested tasks for Gradle builds or requested goals for Maven builds
 processor.onBuild(build -> {
     switch(build) {
-        case GradleBuild b -> b.getAttributes()
-                .map(GradleAttributes::getRequestedTasks)
-                .ifPresent(System.out::println);
-        case MavenBuild b -> b.getAttributes()
-                .map(MavenAttributes::getRequestedGoals)
-                .ifPresent(System.out::println);
-        default -> {}
+        case GradleBuild b -> print(b, GradleAttributes::getRequestedTasks);
+        case MavenBuild b -> print(b, MavenAttributes::getRequestedGoals);
+        default -> {} // Ignore any other build tool
     }
 });
 
 // When using a build tool specific callback, no casting is required
-processor.onGradleBuild(gradleBuild -> {
-    gradleBuild.getAttributes()
-        .map(GradleAttributes::getGradleVersion)
-        .ifPresent(System.out::println);
+processor.onGradleBuild(gradleBuild -> { 
+    print(gradleBuild.getAttributes(), GradleAttributes::getGradleVersion);
 });
 ```
 
-Given requesting the *attributes* build models is so common, it's possible to query for custom values, tags, and several other attributes shared between each build tool directly through the top-level `Build` object without casting.
+##### The `BuildListener` interface
+
+Depending on your use case, you may consider creating an implementation of a `BuildListener` to process build data.
+This is useful if you want your solution to be portable, encapsulated, or you are potentially tracking a lot of state.
+
+A `BuildListener` contains call back methods for each build tool with all methods being optional to implement.
+
+[//]: # (todo create BuildListener sample and link it here)
+
+##### Working with a `Build`
+
+Given requesting the *attributes* build model is so common, it's possible to query for custom values, tags, and several other attributes shared between each build tool directly through the top-level `Build` object without casting.
+When accessed this way, Java-idiomatic types are used where appropriate to do so.
+For example, durations are returned as `Duration` and times as `Instant`.
+
+The following example gives all CI repositories connected to Develocity by filtering on the `CI` tag and accumulating the `Git repository` custom value to a set:
 
 ```java
 processor.withRequiredBuildModels(GRADLE_ATTRIBUTES, MAVEN_ATTRIBUTES);
@@ -143,9 +176,51 @@ gitRepositories.forEach(System.out::println);
 
 ### Caching build data for faster queries
 
-todo
+Interacting with the Develocity API can be slow, especially when requesting many build models.
+Caching the build data can significantly speed up subsequent queries that use the same build data.
 
-### Configuring retries and backoffs
+By default, no caching is done on requests.
+To enable caching, configure the `BuildProcessor` with an implementation of `ProcessorCache`.
+
+There are three such implementations provided out-of-the-box by this library:
+
+- A `FileSystemCache` caches build data on the file system, `~/.develocity-build-processor` by default.
+- An `InMemoryCache` caches build data in memory, useful if you are invoking multiple `BuildProcessor` in the same program
+- A `CompositeCache` composes two or more caches, such that if no build data is found in the first cache, the next cache will be checked, and so on.
+
+The following example demonstrates using a `FileSystemCache`:
+
+```java
+final var start = Instant.now();
+final var count = new AtomicInteger(0);
+
+BuildProcessor.forServer("https://develocity.example.com")
+        .withRequiredBuildModels(GRADLE_BUILD_CACHE_PERFORMANCE, MAVEN_BUILD_CACHE_PERFORMANCE)
+        .withProcessorCache(FileSystemCache.withDefaultStrategy())
+        .onBuild(__ -> count.incrementAndGet())
+        .process(Duration.ofDays(1));
+
+final var end = Instant.now();
+final var runtime = Duration.between(start, end).getSeconds();
+
+System.out.println("Processed " + count.get() + " builds in " + runtime + " seconds.");
+```
+
+Here is one run of this program from my machine:
+
+```shell
+$ ./gradlew run --quiet --console=plain 
+Processed 366 builds in 34 seconds.
+$ ./gradlew run --quiet --console=plain
+Processed 366 builds in 1 seconds.
+```
+
+> [!NOTE]
+> Build data is only cached when at least one build model is requested for a given build.
+> This is because the `/api/builds` endpoint is always called in order to know which builds to process.
+> Therefore, there is no benefit to caching when there are no build models to cache.
+
+### Configuring retries and back offs
 
 todo
 
