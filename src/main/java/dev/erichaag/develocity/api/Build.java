@@ -13,7 +13,7 @@ public sealed interface Build permits GradleBuild, MavenBuild, BazelBuild, SbtBu
 
     String getId();
 
-    long getAvailableAt();
+    Instant getAvailableAt();
 
     String getBuildToolVersion();
 

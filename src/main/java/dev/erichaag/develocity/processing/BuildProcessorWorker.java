@@ -88,13 +88,12 @@ class BuildProcessorWorker {
     }
 
     private List<Build> discoverBuilds(String query, Instant since) {
-        final var sinceMilli = since.toEpochMilli();
         final var builds = new ArrayList<Build>();
         while (true) {
             final var response = develocity.getBuilds(query, maxDiscoveryBuildsPerRequest, getLastId(builds));
             if (response.isEmpty()) return builds;
-            if (response.getLast().getAvailableAt() < sinceMilli) {
-                builds.addAll(response.stream().filter(it -> it.getAvailableAt() >= sinceMilli).toList());
+            if (response.getLast().getAvailableAt().compareTo(since) < 0) {
+                builds.addAll(response.stream().filter(it -> it.getAvailableAt().compareTo(since) >= 0).toList());
                 return builds;
             }
             builds.addAll(response);

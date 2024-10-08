@@ -29,8 +29,8 @@ public final class BazelBuild implements Build {
     }
 
     @Override
-    public long getAvailableAt() {
-        return build.getAvailableAt();
+    public Instant getAvailableAt() {
+        return Instant.ofEpochMilli(build.getAvailableAt());
     }
 
     @Override
