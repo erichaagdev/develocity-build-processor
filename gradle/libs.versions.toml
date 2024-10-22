@@ -1,7 +1,7 @@
 [versions]
 jackson-core = "2.18.0"
 jakarta-annotations = "3.0.0"
-junit = "5.11.2"
+junit = "5.11.3"
 openapi-generator = "7.9.0"
 
 [libraries]
