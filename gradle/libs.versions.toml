@@ -1,12 +1,13 @@
 [versions]
-jackson-core = "2.20"
+jackson-core = "2.20.0"
+jackson-annotations = "2.20"
 jakarta-annotations = "3.0.0"
 junit = "6.0.0"
 openapi-generator = "7.16.0"
 
 [libraries]
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-core" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-core" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-annotations" }
+jackson-databind = { module = " com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-core" }
 jakarta-annotations = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotations" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 
