@@ -53,8 +53,8 @@ val postProcessDevelocityApiSpecification by tasks.registering(PostProcessDevelo
 
 openApiGenerate {
     generatorName = "java"
-    inputSpec = postProcessDevelocityApiSpecification.flatMap { it.outputSpecification.asFile }.map { it.toString() }
-    outputDir = layout.buildDirectory.dir("generated/openapi").map { it.asFile.absolutePath }
+    inputSpec = postProcessDevelocityApiSpecification.flatMap { it.outputSpecification }
+    outputDir = layout.buildDirectory.dir("generated/openapi")
     modelPackage = provider { "$group.develocity.api" }
     apiPackage = provider { "$group.unused.api" }
     invokerPackage = provider { "$group.unused.invoker" }
